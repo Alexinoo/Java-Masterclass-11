@@ -1,4 +1,4 @@
-package first_steps.part_define_main_method;
+package first_steps.part2_define_main_method;
 
 /*
  * Defining the Main Method
