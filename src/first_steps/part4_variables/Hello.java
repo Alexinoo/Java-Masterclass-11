@@ -85,16 +85,46 @@ package first_steps.part4_variables;
  *
  * String Literal
  * ..............
- * Any sequence of characters surrounded by double quotes is a String literal in Java
- *  - It's value can't be changed, unlike a variable
- * Now a literal, unlike a variable can't be changed, it's an expression and not a variable
- * So in actual sense, no pun intended, we're saying literally, print text "myFirstNumber"
+ * - Any sequence of characters surrounded by double quotes is a String literal in Java
+ *      - It's value can't be changed, unlike a variable
+ * - Now a literal, unlike a variable can't be changed, it's an expression and not a variable
+ * - So in actual sense, no pun intended, we're saying literally, print text "myFirstNumber", and unsurprisingly after
+ *  that we can see the text "myFirstNumber" showing
+ * - So in essence that's why we're getting that string value
+ *
+ * - If we actually remove the double quotes,both from the start and at the end and run this again
+ *      - This time the value 5 is printed on the console
+ * - The variable we're printing must be identical to the variable declared
+ *
+ * - Just to confirm, if we change the value to a 10, and re-run again,
+ *   - we now got the output as number 10
+ *
+ * - The expression to the right of the equal sign, can be a lot more complex
+ * - At the moment, we've just used a literal integer value, number 5, then later changed it to number 10
+ * - But we can be a little bit more complex there
+ *
+ * - Let's add an expression that is the sum of 2 numbers e.g. 10 + 5
+ *      - And we now got 15 output on the screen
+ * - Java has looked up to the left expression of the equal sign, and figured that, that is a mathematical expression
+ *   and it basically calculated that to be 15
+ *
+ * - We can also get a little more complex by doing the following (10 + 5) + (2 * 10)
+ *   - And surely enough we get the value 35 printed which is the correct answer
+ *
+ * Java Operators
+ * ..............
+ * - Java Operators or just operators perform an operation (hence the word) on a variable.
+ * - +, - , * and / are 4 common ones that we're quite familiar with
+ * - Though, there're lot more operators that we'll learn as we progress
  */
 public class Hello {
     public static void main(String[] args) {
         System.out.println("Hello, Alex");
 
-        int myFirstNumber = 5;
+       // int myFirstNumber = 5;
+      //  int myFirstNumber = 10;
+      //  int myFirstNumber = 10 + 5;
+        int myFirstNumber = (10 + 5) + (2 * 10);
         System.out.println(myFirstNumber);
     }
 }
