@@ -48,6 +48,31 @@ package first_steps.part11_float_point_precision_challenge;
  * Hint:
  *  - 1 pound is equal to 0.45359237 of a kilogram (This should help you perform the calculation)
  *
+ * Next,
+ * - We're now aware that we can type
+ *      double pi = 3.1415927d;
+ * - We can also express a number like this
+ *      double anotherNumber = 3_000_000.4_567_890d;
+ *
+ *      - and print it as well,
+ *      - note the 0 at the end is ignored as it's not needed
+ *
+ * Floating Point Number Precision Tips
+ * ....................................
+ * - In general float and double are great floating point operations
+ * - But both are not great to use where precise calculations are required - this is due to a limitation with how
+ *   floating point numbers are stored, and not a Java problem as such
+ *
+ * BigDecimal
+ * ............
+ * - Java has a class called BigDecimal that overcomes this
+ * - When precise calculations are necessary such as when performing currency calculations, floating-point types should
+ *   not be used
+ *
+ * - But for general calculations, float and double are just fine
+ *  - Like converting kilograms and things of that nature
+ * - And again double would be the recommendation, that would be the floating point type that you'd generally use
+ *
  */
 public class Main {
 
@@ -69,7 +94,14 @@ public class Main {
         System.out.println("MyFloatValue = "+myFloatValue);
         System.out.println("MyDoubleValue = "+myDoubleValue);
 
-        //double noOfPounds =
+        double noOfPounds = 200d;
+        double noOfKilograms = noOfPounds * 0.45359237d;
+        System.out.println("200.0 pounds is equivalent to : "+ noOfKilograms + " kg");
+
+        double pi = 3.1415927d;
+        double anotherNumber = 3_000_000.4_567_890d;
+
+        System.out.println(anotherNumber);
 
     }
 }
