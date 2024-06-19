@@ -39,24 +39,53 @@ package java_tutorial.part8_coding_exercises;
  * N/B
  * ...
  * - Use Math.round to round the number of calculated miles per hour (double). The method round returns a long
+ *
+ * Math.round()
+ * ............
+ * - Math.round() is a built-in method which returns the closest long method to the argument
+ * - The result is rounded to an integer by adding 1/2, taking the floor of the result after adding 1/2, and typecasting the result to type long
+ * - The () returns the value of the argument rounded to the nearest "int" value
+ * - returns a long datatype
+ *
+ * Examples
+ *  1.5 will be rounded to 2
+ *  3.9 will be rounded to 4
+ *  4.5 will be rounded to 5
+ *
+ *
+ * Tip
+ * ...
+ * - In the method printConversion, call the method toMilesPerHour instead of duplicating the code
+ * - 1 mile per hour is 1.609 kilometers per hour
+ *
  */
 public class SpeedConverter {
 
     public static void main(String[] args) {
+
         printConversion(1.5);
+        printConversion(10.25);
+        printConversion(-5.6);
+        printConversion(25.42);
+        printConversion(75.114);
+        printConversion(10.5);
+
+        System.out.println(".".repeat(50));
     }
 
     public static long toMilesPerHour(double kilometersPerHour){
         if (kilometersPerHour < 0){
             return -1;
         }
-        long milesPerHour = Math.round(kilometersPerHour / 1.609344);
-        return milesPerHour;
+        return Math.round(kilometersPerHour / 1.609344);
     }
 
     public static void printConversion(double kilometersPerHour){
         if (kilometersPerHour < 0){
             System.out.println("Invalid value");
+            return;
         }
+        long milesPerHour = toMilesPerHour(kilometersPerHour);
+        System.out.println(kilometersPerHour+" km/h = " +milesPerHour + " mi/h");
     }
 }
