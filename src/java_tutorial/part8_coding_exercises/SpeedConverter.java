@@ -58,7 +58,5 @@ public class SpeedConverter {
         if (kilometersPerHour < 0){
             System.out.println("Invalid value");
         }
-        long milesPerHour = Math.round(kilometersPerHour / 1.609344);
-        return milesPerHour;
     }
 }
