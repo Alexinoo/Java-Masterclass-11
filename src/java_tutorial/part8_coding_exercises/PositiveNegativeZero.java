@@ -55,7 +55,7 @@ package java_tutorial.part8_coding_exercises;
  *
  *
  */
-public class Main {
+public class PositiveNegativeZero {
 
     public static void main(String[] args) {
         checkNumber(1);
