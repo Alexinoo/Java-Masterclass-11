@@ -37,7 +37,7 @@ package java_tutorial.part10_method_overloading_challenge;
  *  - calling another overloaded method just requires you to use the right number of parameters
  *
  */
-public class Main {
+public class CalculateFeetAndInchesToCentimeters {
 
     public static void main(String[] args) {
 
