@@ -40,19 +40,26 @@ package java_tutorial.part10_method_overloading_challenge;
 public class Main {
 
     public static void main(String[] args) {
+
+        double centimeters = calcFeetAndInchesInCentimeters(-10,5);
+        if (centimeters < 0.0){
+            System.out.println("Invalid feet or inches parameters");
+        }
          calcFeetAndInchesInCentimeters(7,5);
-         calcFeetAndInchesInCentimeters(-10,5);
          calcFeetAndInchesInCentimeters(0,1);
          calcFeetAndInchesInCentimeters(6,-10);
          calcFeetAndInchesInCentimeters(6,13);
          calcFeetAndInchesInCentimeters(6,0);
 
          calcFeetAndInchesInCentimeters(500);
+         calcFeetAndInchesInCentimeters(100);
+         calcFeetAndInchesInCentimeters(156);
+         calcFeetAndInchesInCentimeters(157);
+         calcFeetAndInchesInCentimeters(-10);
     }
 
     public static double calcFeetAndInchesInCentimeters(double feet, double inches){
         if (feet < 0 || (inches < 0 || inches > 12)){
-            System.out.println("Invalid feet or inches parameters");
             return -1;
         }
         double totalInches = (feet * 12) + inches;
@@ -63,11 +70,13 @@ public class Main {
 
     public static double calcFeetAndInchesInCentimeters(double inches){
         if (inches < 0){
+            System.out.println("Invalid inches");
             return -1;
         }
 
-        long feetInInches = (long) (inches / 12);
-        double remainingInches = (inches % 12);
-        return calcFeetAndInchesInCentimeters(feetInInches , remainingInches);
+        double feet = (int) (inches / 12);
+        double remainingInches = (int) (inches % 12);
+        System.out.println(inches + " inches is equal to " +feet+ " feet and "+remainingInches);
+        return calcFeetAndInchesInCentimeters(feet , remainingInches);
     }
 }
