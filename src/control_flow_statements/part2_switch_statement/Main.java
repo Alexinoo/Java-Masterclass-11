@@ -60,6 +60,19 @@ package control_flow_statements.part2_switch_statement;
  * - Can also get a little bit tedious in cases where you're testing so many values, and there is a little bit of a
  *   shortcut by grouping the cases
  *      - e.g. case 3: case 4: case 5:
+ *      - we can then access the switchValue from here if we wanted to do further calculations
+ *      - the important thing here, is that we can combine / group multiple case tests
+ *
+ * break keyword
+ *  - if we omit the break keyword, we'll get unpredictable results
+ *  - the program will continue to process other cases, or the output will fall through to the next case and continue
+ *    on to until it finds another break if any or until it finishes off the switch statement
+ *  - it's a common error that you'll commonly find in code that's forgetting to put a break
+ *
+ *  - optional with default case
+ *      - technically, we don't need it here , but it's always good to be precise to leave it there
+ *
+ * - The switch statement can also be used with 4 primitive types - byte, short, char and int
  */
 public class Main {
     public static void main(String[] args) {
