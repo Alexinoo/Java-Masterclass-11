@@ -1,4 +1,4 @@
-package arrays_and_lists.part4_refeference_vs_value_types;
+package arrays_and_lists.part4_reference_vs_value_types;
 
 import java.util.Arrays;
 
