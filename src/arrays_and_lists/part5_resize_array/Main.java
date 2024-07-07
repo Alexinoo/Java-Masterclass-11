@@ -1,4 +1,4 @@
-package arrays_and_lists.part5_list_and_arraylist;
+package arrays_and_lists.part5_resize_array;
 
 import java.util.Scanner;
 
