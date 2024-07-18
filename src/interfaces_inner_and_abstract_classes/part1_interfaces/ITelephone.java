@@ -28,8 +28,8 @@ package interfaces_inner_and_abstract_classes.part1_interfaces;
 public interface ITelephone {
     void powerOn();
     void dial(int phoneNumber);
+    boolean isRinging();
     void answer();
     boolean callPhone(int phoneNumber);
-    boolean isRinging();
 }
 
