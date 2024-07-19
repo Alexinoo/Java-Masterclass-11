@@ -66,11 +66,96 @@ package interfaces_inner_and_abstract_classes.part4_inner_classes;
  *
  *
  *
+ *
+ * Next,
+ * - So, basically, we added gears to our Gearbox via this
+ *       this.gears.add(new Gear(number , ratio));
+ * - We can change the gear as long as the gear is in range and the clutch is in
+ * - And also print out of how fast the wheel is spinning
+ *
+ * - And if we forget to operate the clutch when changing gears, it'll either grind the gears or cause the engine to scream as it hits the red line
+ *   and bounces off the limiter
+ *
+ * - Notice that we didn't have any references at all now to the Gear class, in order to drive the car and that's because the Gear class is like
+ *   local to that Gearbox class itself now
+ *
+ * N/B
+ * ..
+ *
+ * - addGear(1, 5.3) is really a part of building the Gearbox and not actually using it
+ * - therefore, you could consider that it'd be better to put
+ *       mcLaren.addGear(1,5.3);
+ *       mcLaren.addGear(2,10.6);
+ *       mcLaren.addGear(3,15.9);
+ *
+ * - in the constructor of our Gearbox class, and use a for loop rather than having them as separate calls which they're actually now as
+ *   we've added them here
+ *
+ * - And this still works, and as you can see, the Gear class, the private class can be a good way to improve encapsulation
+ * - So, objects only know about other objects that they need to know about
+ *
+ * - So, in this particular example, nothing apart from the Gearbox needs to have any details about the actual Gear, and so we hide the Gear class
+ *    completely by making it a private inner class of the Gearbox class
+ *
+ * - So, you're not accessing the Gear class at all in anything other than the actual Gearbox class itself
+ *
+ * - This is a great way to encapsulate that functionality and to restrict other people from accessing it
+ *
+ * - Obviously, if we were writing a stock control program, then the program would have to have some knowledge of the different gears so that they
+ *   can be ordered or request sent to a manufacturer to make them
+ *
+ * - So it's up to us to decide how our programs should be designed to work, and by doing that or figuring out how to do that, that's really the
+ *   great skill of OOP
+ *
+ *
+ * - There's 2 special cases of inner classes:
+ *      - local class
+ *      - anonymous class
+ *
+ *
  */
 public class Main {
     public static void main(String[] args) {
         Gearbox mcLaren = new Gearbox(6);
-        Gearbox.Gear first = mcLaren.new Gear(1,12.3);
-        System.out.println(first.driveSpeed(1000));
+
+        //Gearbox.Gear first = mcLaren.new Gear(1,12.3);
+        //System.out.println(first.driveSpeed(1000));
+
+        //Add gear , 1, 2, 3
+        // Each gear has a different ratio
+        // DOne via the Gearbox constructor
+        //mcLaren.addGear(1,5.3);
+        //mcLaren.addGear(2,10.6);
+        //mcLaren.addGear(3,15.9);
+
+        //operate clutch
+        mcLaren.operateClutch(true);
+
+        //change gear now that we have press the clutch
+        mcLaren.changeGear(1);
+
+        // then set clutch to false
+        mcLaren.operateClutch(false);
+
+        // print wheel speed
+        System.out.println(mcLaren.wheelSpeed(1000));
+
+        //then try to change to second gear - fail because clutchIsIn is false
+        mcLaren.changeGear(2);
+        System.out.println(mcLaren.wheelSpeed(3000));
+
+        // press clutch
+        mcLaren.operateClutch(true);
+
+        // change to 3-rd gear
+        mcLaren.changeGear(3);
+
+        //release clutch
+        mcLaren.operateClutch(false);
+
+        // print wheel speed
+        System.out.println(mcLaren.wheelSpeed(6000));
+
+
     }
 }
