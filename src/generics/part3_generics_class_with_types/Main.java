@@ -172,6 +172,95 @@ package generics.part3_generics_class_with_types;
  *    time error
  *
  *
+ * Ranking
+ *  - The Team class, include a simple ranking which is a very simple formula to calculate how the team is ranked in
+ *    the league
+ *      - which is the number of games won multiplied by 3 plus games tied
+ *  - Obviously, a typical league ranking would consider the number of games played, goal differences and other things
+ *    as well , and we can implement those complexities if interested and play around but we'll keep it simple here
+ *
+ *  - Let's go ahead and add the rankings
+ *      - printRankings(Team<T> team)
+ *          - print name of the team and the points (rankings)
+ *
+ *  - This works well, but 1 thing we can't do is to compare Teams, and see how they're doing in the league
+ *
+ *  - Let's make a change to our Team class, and implement something very useful in interface called Comparable
+ *
+ *  - Update the Team class to implement Comparable and then use the diamond again to make sure that we're using the
+ *    same generics again
+ *      Team<T extends Player> implements Comparable<Team<T>>
+ *  - And because we only want to compare our teams to other teams, that's why we're actually using the Team<T> ,team
+ *    and the type, because it doesn't make sense to compare a Football Team to a Baseball Team
+ *  - Therefore, that's why we're adding Team<T> , team and the actual type , in another set of diamonds
+ *
+ *  - This looks complicated but in actual sense we've created the ability to have generic types, such as Football
+ *    Team and so we're specifying a generic type as a parameter, to the generic interface comparable
+ *
+ *  - So, in this one here, Comparable<Team<T>> , Team is the type in this case, Team<FootballPlayer> and Team<T> is
+ *    also a Type, and so Comparable<Team<T>>
+ *     - can accept either
+ *          Comparable<Team<FootballPlayer>>
+ *          Comparable<Team<BaseballPlayer>>
+ *          Comparable<Team<SoccerPlayer>>
+       - and we're doing this so that we don't compare Football Team with a Baseball Team for argument's sake
+ *
+ *  - So if just do Comparable<Team>, and just use literally Team, compareTo() could only take Team as its parameter
+ *    , then when we write compareTo(), it will only take Team as it's parameter
+ *      - then we wouldn't have that ability to ensure that only the types of teams, in this case, are appropriate
+ *        to be passed to that method
+ *
+ *  - We then need to implement compareTo() defined in the Comparable interface takes an Object and returns
+ *      - a negative number if this is less than the object
+ *      - zero, if equal
+ *      - positive number if greater than the obj
+ *
+ *  - less than means, we should sort lower and teams with higher rankings to sort higher in the list
+ *  - therefore we need to make our compare to return less if the ranking, is greater than the opponents
+ *
+ *  - We've used the compareTo() in our LinkedLit challenge and many of Java classes actually implement this
+ *    interface including the String and Integer classes
+ *      - And that's how these obj(s) can be sorted as a result of doing that
+ *
+ * compareTo()
+ *  - first test
+ *      - check if the current object ranking "this.ranking()" is greater than the object being passed ranking
+ *          - return -1
+ *          - i.e. the current team, the one that we're actually in, referred by "this", if the ranking for that team
+ *            is higher than the team passed to this method, then it actually means "this" is actually higher in
+ *            essence & we'll return -1
+ *     - check if the current obj ranking "this.ranking()" is less than "team.ranking(), return 1, because the
+ *       opposite is true
+ *          - the current object hasn't got more points, essentially, it's got less points, so return 1
+ *     - otherwise
+ *          - return 0
+ *
+ * Next
+ *  - compare the teams
+ *      i.e. afcLeopards.compareTo(fremantle) ( 6 -0 ) returns -1
+ *
+ * - If you got a List<Obj> that implement Comparable, such as an ArrayList<T> for example, what you, can do is you
+ *   can quickly sort the list by using the static sort() of the Collections class
+ *
+ * - But essentially, if you've got an ArrayList of Teams, you can use this code , something like this
+ *      ArrayList<T> teams
+ *
+ * - You can do
+ *      Collections.sort(teams)
+ *
+ * - And that would be sorted, and the whole point of this is it will actually be sorted, using the compareTo() that
+ *   we actually wrote for the actual Team itself
+ *
+ * - That's obviously, 1 way of sorting, but you can also refer to the sort() that we wrote for the Arrays challenge
+ *
+ * - However, this is quite simple, because we're using the built-in Java Collections class
+ *
+ * - ANd we've got an entire section about the Collections in upcoming videos
+ *
+ *
+ *
+ *
+ *
  *
  */
 public class Main {
@@ -196,6 +285,7 @@ public class Main {
 
         Team<FootballPlayer> hawthorn = new Team<>("Hawthorn");
         Team<FootballPlayer> fremantle = new Team<>("Fremantle");
+        Team<FootballPlayer> melbourne = new Team<>("Melbourne");
 
         //game results
         hawthorn.matchResult(fremantle,1,0); // Hawthorn 1 - 0 Fremantle
@@ -203,8 +293,23 @@ public class Main {
         afcLeopards.matchResult(fremantle,2,1 ); // AFC 2 - 1 Fremantle
 
         // odd Result FootballTeam vs BaseballTeam
-        afcLeopards.matchResult(chicagoCubs , 1,1 );
+       // afcLeopards.matchResult(chicagoCubs , 1,1 );
+        System.out.println("=== Rankings ======");
+        afcLeopards.printRankings(afcLeopards);
+        fremantle.printRankings(fremantle);
+        hawthorn.printRankings(hawthorn);
+
+        // Compare Teams
+        System.out.println("=== Compare ======");
+        System.out.println(hawthorn.compareTo(fremantle)); // Hawthorn(3 points) Fremantle(0 points) (-1)
+        System.out.println(afcLeopards.compareTo(fremantle)); // AFC(6 points) Fremantle(0 points)  (-1)
+
+        System.out.println(fremantle.compareTo(afcLeopards)); // Fremantle(0 points) AFC(6 points)  1
+
+        System.out.println(fremantle.compareTo(melbourne)); // Fremantle(0 points) Melbourne(0 points)  0
+
 
 
     }
+
 }
