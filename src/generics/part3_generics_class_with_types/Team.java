@@ -22,11 +22,11 @@ public class Team<T extends Player> {
 
     public boolean addPlayer(T player){
         if (this.members.contains(player)){
-            System.out.println( ((Player)player).getName() + " is already on this team");
+            System.out.println( player.getName() + " is already on this team");
             return false;
         }
         this.members.add(player);
-        System.out.println( ((Player)player).getName() + " signed by "+this.name);
+        System.out.println( player.getName() + " signed by "+this.name);
         return true;
     }
 
@@ -34,16 +34,21 @@ public class Team<T extends Player> {
         return this.members.size();
     }
 
-    public void matchResult(Team opponent , int ourScore , int theirScore){
+    public void matchResult(Team<T> opponent , int ourScore , int theirScore){
+        String message;
         if (ourScore > theirScore){
             won++;
+            message = " beat ";
         } else if (ourScore == theirScore) {
             drew++;
+            message = " drew with ";
         }else {
             lost++;
+            message = " lost to ";
         }
         played++;
         if (opponent != null){
+            System.out.println(this.getName() + message + opponent.getName());
             opponent.matchResult(null,theirScore , ourScore); // update opponent score; pass null as opponent to avoid infinite loop
         }
     }
