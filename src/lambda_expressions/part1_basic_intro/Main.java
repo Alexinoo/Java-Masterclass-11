@@ -1,4 +1,4 @@
-package lambda_expressions;
+package lambda_expressions.part1_basic_intro;
 
 public class Main {
     public static void main(String[] args) {
