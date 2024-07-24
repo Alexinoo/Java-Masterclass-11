@@ -19,6 +19,11 @@ package lambda_expressions.part10_lambda_mini_challenges;
         }
     };
  *
+ *
+ * - So does this lambda map to any of the interfaces in the java.util.function package ?
+ *     - Well, actually no, it doesn't
+ *     - It doesn't take any arguments and it doesn't return any value
+ *     - All the interfaces in the java.util.function package, either take an argument or arguments or return a value, or do both
  */
 public class Challenge1 {
     public static void main(String[] args) {
