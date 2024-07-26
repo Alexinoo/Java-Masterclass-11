@@ -38,48 +38,68 @@ package lambda_expressions.part4_lambda_expression_nested_blocks;
  * class : AnotherClass
  *  methods:
  *      doSomething : void
- *          - returns Main.doStringStuff(UpperAndConcat instance, "String1","String2");
+ *          - call Main.doStringStuff()
+ *              - and pass UpperAndConcat interface instance
+ *              - pass "String1" and "String2"
+ *              - return the result;
+ *
+ * Next - in the main class
+ *  - Construct an instance of AnotherClass and call doSomething()
+ *
+ * Next
+ *  - Print out the class name of the Another class before we return the result of Main.doStringStuff()
+ *  - Print out the class name of the Anonymous class before we return the result of Main.doStringStuff()
+ *
+ * Result:
+ *  - The AnotherClass class's name is: AnotherClass
+ *  - The anonymous class's name is:
+ *
+ * - This is correct because of course the anonymous class doesn't have a name, which makes sense,
+ *
+ * - But let's actually now use a lambda expression instead of an anonymous class
+ *
+ *        UpperAndConcat uc = (s1,s2)-> {
+            System.out.println("The lambda expression class is: "+getClass().getSimpleName());
+            return s1.toUpperCase() + s2.toUpperCase();
+        };
+ *
+ * - And also print inside AnotherClass
+ *
+ *      System.out.println("The AnotherClass class's name is: "+getClass().getSimpleName());
+ *
+ * Result:
+ *  - The AnotherClass class's name is: AnotherClass
+ *  - The lambda expression class is: AnotherClass
+ *
+ * So what is this telling us ?
+ *  - Well, the lambda or that a lambda expression isn't a class,
+ *  - When the code runs, an anonymous instance isn't created
+ *  - instead the lambda is treated as a nested block of code - sames as the code below
+ *       {
+ *           System.out.println("The nested code class is: "+getClass().getSimpleName());
+ *       }
+ *  - and has the same scope as a nested block above
+ *
+ *
+ * - Let's look at other example so that this is much clear
+ *      - Let's look at a nested block that isn't part of a lambda
+ *      - Instead of using a lambda in the doSomething(), we'll do it the long way, by using anj anonymous class
+ *      - We'll also put all the code inside a nested block
+ *
+ * - By putting the code inside a nested block, what that means is that we've enclosed it with another set of curly braces
  *
  */
 
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        Employee john = new Employee("John Doe",30);
-        Employee tim = new Employee("Tim Buchalka",21);
-        Employee jack = new Employee("Jack Hill",40);
-        Employee snow = new Employee("Snow White",22);
-
-        // Add them to a List
-        List<Employee> employees = new ArrayList<>();
-        employees.add(john);
-        employees.add(tim);
-        employees.add(jack);
-        employees.add(snow);
-
-        //sort
-        Collections.sort(employees , (e1 , e2) -> e1.getName().compareTo(e2.getName()));
-
-        for (Employee employee: employees ) {
-            System.out.println(employee.getName());
-        }
-
-        // using lambda
-        UpperAndConcat uc = (s1, s2) -> {
-            String result = s1.toUpperCase() + s2.toUpperCase();
-            return result;
-        };
-
-        String sillyString = doStringStuff(uc,employees.get(0).getName() , employees.get(1).getName());
-        System.out.println(sillyString); // JACK HILLJOHN DOE
-
+        AnotherClass anotherClass = new AnotherClass();
+        String result = anotherClass.doSomething();
+        System.out.println(result);
     }
 
-    private static String doStringStuff(UpperAndConcat uc , String s1 , String s2){
+    public static String doStringStuff(UpperAndConcat uc , String s1 , String s2){
         return uc.upperAndConcat(s1,s2);
     }
 }
@@ -111,4 +131,51 @@ class Employee{
 
 interface UpperAndConcat {
     String upperAndConcat(String s1, String s2);
+}
+
+class AnotherClass {
+
+    // Using anonymous class
+    /*public String doSomething(){
+        System.out.println("The AnotherClass class's name is: "+getClass().getSimpleName());
+        return Main.doStringStuff(new UpperAndConcat() {
+            @Override
+            public String upperAndConcat(String s1, String s2) {
+                System.out.println("The anonymous class's name is: "+getClass().getSimpleName());
+                return s1.toUpperCase() + s2.toUpperCase();
+            }
+        },"String1","String2");
+    } */
+
+    // Using lambda
+   /*  public String doSomething(){
+
+        {
+            System.out.println("The nested code class is: "+getClass().getSimpleName());
+        }
+
+        UpperAndConcat uc = (s1,s2)-> {
+            System.out.println("The lambda expression class is: "+getClass().getSimpleName());
+            return s1.toUpperCase() + s2.toUpperCase();
+        };
+
+        System.out.println("The AnotherClass class's name is: "+getClass().getSimpleName());
+        return Main.doStringStuff(uc,"String1","String2");
+    } */
+
+    // nested block
+    public String doSomething() {
+        {
+            UpperAndConcat uc = new UpperAndConcat() {
+                @Override
+                public String upperAndConcat(String s1, String s2) {
+                    return s1.toUpperCase() + s2.toUpperCase();
+                }
+            };
+
+            System.out.println("The AnotherClass class's name is: "+getClass().getSimpleName());
+            return Main.doStringStuff(uc,"String1","String2");
+      }
+    }
+
 }
