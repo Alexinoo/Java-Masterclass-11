@@ -86,7 +86,43 @@ package lambda_expressions.part4_lambda_expression_nested_blocks;
  *      - Instead of using a lambda in the doSomething(), we'll do it the long way, by using anj anonymous class
  *      - We'll also put all the code inside a nested block
  *
- * - By putting the code inside a nested block, what that means is that we've enclosed it with another set of curly braces
+ * - By putting the code inside a nested block, what that means is that we've enclosed it with another set of
+ *   curly braces
+ * - Code within a nested block can reference variables defined within the enclosing block
+ * - If we were to define a local variable in the enclosing block, we could use it within the nested block
+ *      - define int variable
+ *      - increment it inside the nested block and print it out
+ * - And this works without errors and prints i = 1;
+ *
+ * - So basically, the code within the nested block can use the local variable i, because nested blocks are in the
+ *   enclosing block scope
+ *
+ * But what about the anonymous class though ?
+ * - We already know that if we want to reference a local variable defined outside the anonymous class, we have
+ *   to declare the local variable as final
+ * - If we try to use i inside the UpperAndConcat(), we'll actually get an error
+ *      - Let's try and if see it will work
+ *      - We get an error and intelliJ suggests that the variable i has to be declared as effectively final
+ *          - need to add keyword final, when declaring i
+ *          - then comment out the code where we're incrementing i since it's now final
+ *      - Both i within the anonymous class and inside the nested block prints i as 0 , because, we cannot reassign
+ *        i which is now declared as final
+ *
+ * But why do the local variables have to be declared as final when we use them within an anonymous class ?
+ *  - Well, it's because the local variable doesn't belong to the anonymous class instance
+ *  - What happens is that the variable is replaced by whatever the value of i is, when the instance is constructed
+ *  - So, its possible we may not use the instance of an anonymous class for a while, we may even pass it to a
+ *     method in another class
+ *  - And there will be no way for the Java runtime to update the value within the anonymous class instance, every
+ *    time it changed within the doSomething()
+ *  - In other words, the value would get out of sync
+ *
+ *  - And so for that reason, the values of local variable declared outside the scope of the anonymous class are not
+ *    allowed to change and need to be declared as final
+ *
+ * So how does this relate to lambda expressions ?
+ *  - Let's go back to using lambda in the doSomething() and also remove the extra set of curly braces as well
+ *      and also remove the final keyword from the local variable declaration
  *
  */
 
@@ -164,18 +200,39 @@ class AnotherClass {
     } */
 
     // nested block
-    public String doSomething() {
+   /* public String doSomething() {
+        final int i = 0;
         {
             UpperAndConcat uc = new UpperAndConcat() {
                 @Override
                 public String upperAndConcat(String s1, String s2) {
+                    System.out.println("i (within anonymous class) = "+i);
                     return s1.toUpperCase() + s2.toUpperCase();
                 }
             };
 
             System.out.println("The AnotherClass class's name is: "+getClass().getSimpleName());
+
+            //i++;
+            System.out.println("i = "+i);
+
             return Main.doStringStuff(uc,"String1","String2");
       }
+    } */
+
+    // relationship of local variables with lambda
+    public String doSomething(){
+        int i = 0;
+        UpperAndConcat uc = (s1 , s2) -> {
+            System.out.println("The lambda expression's class is "+getClass().getSimpleName());
+            return s1.toUpperCase() + s2.toUpperCase();
+        };
+        System.out.println("The AnotherClass class's name is: "+getClass().getSimpleName());
+
+        System.out.println("i = "+i);
+
+        return Main.doStringStuff(uc,"String1","String2");
     }
+
 
 }
