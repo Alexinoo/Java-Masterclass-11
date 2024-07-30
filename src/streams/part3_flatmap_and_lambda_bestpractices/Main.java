@@ -204,6 +204,74 @@ import java.util.stream.Stream;
                     return s.length() == 3;
                 });
  *
+ *  - Nothing is printed here, because stream operations are lazily evaluated
+ *      - Nothing happens until there's a terminal operation
+ *      - There isn't a terminal operation in this chain and that's why it wasn't evaluated
+ *
+ *  - It makes sense though because if you have a long chain of intermediate operations, but no terminal operation, then there's nothing coming
+ *    at the bottom of the pipe
+ *      - So it would be a waste of time to execute all the intermediate operations
+ *      - Let's add one to the above
+ *
+ *       Stream.of("ABC","AC","BAA","CCCC","XY","ST")
+                .filter(s -> {
+                    System.out.println(s);
+                    return s.length() == 3;
+                })
+ *              .count();
+ *      - And now we get the arguments supplied to the predicate printed out on the console
+ *
+ *
+ * Best Practices
+ *  - We've written lambda expressions in different ways and here are the variations we've used
+ *
+ *      - Specified the types of parameters vs letting the compiler infer them
+ *
+ *      - Used a return statement with curly braces for one-statement lambda expressions vs not using return because it's implied (and hence not
+ *          requiring curly braces)
+ *
+ *      - Used lambda expressions that contain one-statement vs lambda expressions that have more than one-statement
+ *
+ *      - Used parenthesis when a lambda expression only has one argument vs not using parenthesis, since they're optional when there's only 1 argument
+ *
+ *  - If you look at the 4 variations, the 2 alternatives offer the choice between verbosity vs conciseness which boils down to the choice between
+ *      readability and conciseness
+ *  - Not all the time, short lambda are usually readable no matter how concise they are
+ *  - But when striving for conciseness, we can sometimes write lambda expressions that are difficult to decipher because we've left out too much info
+ *
+ *  - There are many tutorials on the internet that discuss best practices when using lambda expressions
+ *
+ *  - Many of them fall on the side of conciseness
+ *
+ *  - Keep in mind that best practices are guidelines, not rules
+ *
+ *  Questions to ask ourselves
+ * ...........................
+ *  - Was it concise ? - YES
+ *  - Was it readable to human ? - NO
+ *
+ *  - Can we optionally leave out the parameter types when the compiler can infer them, but will it be easy for a developer reading the code to do
+ *    the same ?
+ *  - We don't have to include the return keyword when a 1-statement lambda returns a value, but will a developer be able to tell at a glance
+ *    that the lambda expression returns a value ?
+ *
+ * Tim's Opinion
+ *  - When it comes to practices that are syntactic and don't make a difference to the code that's generated, the key thing is to be consistent
+ *  - Don't use different styles within the same file
+ *
+ *  - If you're working on the code that someone else wrote, and they always leave out the parameter types, then you should do the same
+ *  - If they always use return keyword with one-statement lambdas, do the same
+ *
+ *  - If you're writing code from scratch, do what's clearer and the easiest for you, and also what you think will be clearer for other developers
+ *    who may work on the code in the future
+ *
+ * Tim's take
+ *  - He would rather see a verbose lambda than a concise one with a comment, because from his experience, comments aren't always updated when the
+ *     code is updated
+ *  - This can ultimately lead to a lot of confusion and wastage of time
+ *
+ *
+ *
  *
  */
 public class Main {
@@ -288,13 +356,13 @@ public class Main {
                 .reduce((e1,e2)-> e1.getAge() < e2.getAge() ? e1 : e2)
                 .ifPresent(System.out::println);
 
-        System.out.println("Streams are Lazily evaluated \n"+
+        System.out.println("Streams are Lazily evaluated - count \n"+
                 "-----------------------------------------");
         Stream.of("ABC","AC","BAA","CCCC","XY","ST")
                 .filter(s -> {
                     System.out.println(s);
                     return s.length() == 3;
-                });
+                }).count();
 
 
 
