@@ -162,6 +162,27 @@ package naming_conventions_packages.part4_scope;
  *  - This works fine, and once again the rules of scope applies and because privateVar is declared as a field
  *    of the InnerClass, Java will actually use that
  *  - Java will use that since we've remove the local one , and multiply by 3 in this case
+ *
+ *  - The "public int privateVar = 3" in the InnerClass, overrides the "private int privateVar = 1" in our ScopeCheck class
+ *      - It doesn't actually shadow the "privateVar" in ScopeCheck timesTwo()
+ *      - The 2 blocks are not enclosing each other and there's no possibility of either variable being in scope in the other method
+ *
+ * Next
+ *  - Suppose we comment out on the "public int privateVar = 3" in our InnerClass , Java will use "private int privateVar = 1" from the
+ *    ScopeCheck class and multiply by 1
+ *      - Java will look for privateVar from the method twoTimes(), and since it can't find one , then it will check from the class variables
+ *        and again, it doesn't found one, then it will look from the Outer class "ScopeCheck" class variables and use "private int privateVar = 1"
+ *      - We can't use "this.privateVar" and we'll get anm error since it's referring to the class variable from the InnerClass which we have
+ *        commented out
+ *  - However, if we wanted to refer to ScopeCheck class variable, "private int privateVar = 1" , then we can use
+ *    ScopeCheck.this.privateVar from the twoTimes() in the InnerClass , to work with "private int privateVar = 1"
+ *      - If we uncomment out "public int privateVar = 3" , we'll still get the same calculation regardless since we've explicitly referenced
+ *        "privateVar" from the ScopeCheck class directly via the line below
+ *
+ *          ScopeCheck.this.privateVar
+ *
+ *  - We can also call twoTimes() from the ScopeCheck class in the InnerClass , if we wanted to by doing this
+ *          ScopeCheck.this.twoTimes()
  */
 public class Main {
 
