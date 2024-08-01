@@ -134,7 +134,20 @@ package naming_conventions_packages.part9_static_keyword;
  *  - Make multiplier field static
  *  - Update multiply() to static
  *
- * - This should now work, because we're now calling a static method and a static field
+ * - This should now work, because we're now calling a static method and accessing a static field
+ *
+ * Note:
+ *  - Also note that the reverse is not true , with no reason why it should be
+ *  - There's no problem at all with nonstatic constructor of the StaticTest class
+ *
+ *  - There's no problem with StaticTest constructor accessing the static numInstances field
+ *  - We can also call static methods from nonstatic ones with no problems
+ *  - There's nothing to prevent a static method from accessing nonstatic fields and methods in another class because it creates an instance of a
+ *    class in order to do so
+ *  - The restriction is purely on a static method access nonstatic field/methods in it's own class
+ *
+ *  - There's more aspect of static that we need to look at, and that's the static initializers
+ *  - However, the discussion of these also need to consider final fields
  *
  */
 public class Main {
