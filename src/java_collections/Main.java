@@ -3,6 +3,7 @@ package java_collections;
 public class Main {
 
     public static void main(String[] args) {
+
         Theatre theatre = new Theatre("Olympian",8,12);
         theatre.getSeats();
 
@@ -20,6 +21,8 @@ public class Main {
         }else {
             System.out.println("Sorry, seat is already taken");
         }
+
+
 
     }
 }

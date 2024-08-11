@@ -90,9 +90,34 @@ public class MainMethod {
             System.out.println("\t" +jupiterMoon.getName());
         }
 
+        System.out.println("==================");
 
+        body = solarSystem.get("Mars");
+        System.out.println("Moons of "+ body.getName());
+        for (HeavenlyBody jupiterMoon : body.getSatellites()){
+            System.out.println("\t" +jupiterMoon.getName());
+        }
 
+        Set<HeavenlyBody> moons = new HashSet<>();
+        for (HeavenlyBody planets : planets) {
+            moons.addAll(planets.getSatellites());
+        }
 
+        System.out.println("All Moons");
+        for (HeavenlyBody moon: moons ) {
+            System.out.println("\t" +moon.getName());
+        }
+
+        // Add duplicate - pluto
+
+        HeavenlyBody pluto2 = new HeavenlyBody("Pluto",842);
+        planets.add(pluto2);
+
+        //Print out all the planets and their orbitalPeriod
+        System.out.println("///// All Planets ///////");
+        for (HeavenlyBody planet: planets) {
+            System.out.println(planet.getName() +" : "+ planet.getOrbitalPeriod());
+        }
 
 
 
