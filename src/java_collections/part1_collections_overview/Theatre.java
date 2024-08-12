@@ -108,7 +108,6 @@ public class Theatre {
     public boolean reserveSeat(String requestedSeatNumber){
        Seat requestedSeat = null;
         for (Seat seat : this.seats){
-            System.out.print(".");
             if (seat.getSeatNumber().equals(requestedSeatNumber)){
                 requestedSeat = seat;
                 break;
