@@ -1,6 +1,7 @@
 package java_collections.part6_map_adventuregame_addexits_1;
 
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -110,6 +111,38 @@ import java.util.Scanner;
  *  - Which gets a copy of the map of available exits for that particular location
  *
  *
+ * Next
+ *  - We've got a pretty basic interface and at the moment we can only type initials abbreviations
+ *  - We can make an improvement to the user interface to allow a player to type full words like North, South, East
+ *    or West if they wish and we can even do short phrases such as "go west"
+ *  - And interestingly enough, a UI that allows you to type go west and have the computer understand was literally
+ *    state of the art back in 1976 when the colossal cave adventure game which this is based on was actually written
+ *  - We only need to understand the String class split()
+ *
+ * String.split()
+ *  - String.split() in action
+ *  - Example 1
+ *      String[] road = "You are standing at the end of the road before a small brick building".split(" ");
+ *      System.out.println(Arrays.toString(road)); //[You, are, standing, at, the, end, of, the, road, before, a, small, brick, building]
+ *
+ *  - Example 2
+ *      String[] building = "You are inside a building, a well house for a small spring".split(", ");
+ *      System.out.println(Arrays.toString(building)); //[You are inside a building, a well house for a small spring]
+ *
+ * Explanation to Example 1
+ *  - The first use of the split() creates an array of Strings with 14 items , containing each of the word in the
+ *    location String
+ *  - The split() breaks up the string into individual items based on a delimiter which was the space passed to the
+ *     split()
+ *  - So essentially, it uses that as a delimiter, and each word that is separated by space has been added in the string
+ *    array
+ *
+ * Explanation to Example 2
+ *  - Does something very similar , but it's using the comma followed by a space and consequently we end up with an
+ *    array containing only 2 entries this time
+ *      - uses ", " which is passed to the split()
+ *
+ * - The split() is very useful for splitting down content , or splitting down a large string into smaller pieces
  *
  *
  *
@@ -159,27 +192,29 @@ public class Main {
 
         int loc = 1;
 
-        while (true){
-            System.out.println(locations.get(loc).getDescription());
+//        while (true){
+//            System.out.println(locations.get(loc).getDescription());
+//
+//            if (loc == 0)
+//                break;
+//
+//            //Get available exists for location specified and print them
+//            Map<String,Integer> possibleExits = locations.get(loc).getExits(); // get map of valid exits from the current location which is : Road
+//            System.out.print("Available exits are ");
+//            for (String exitRoute : possibleExits.keySet()){
+//                System.out.print(exitRoute + ", ");
+//            }
+//            System.out.println();
+//
+//            String direction = scanner.nextLine().toUpperCase(); // Get character from Keyboard corresponding to the direction: N , S , E , W
+//            if (possibleExits.containsKey(direction)){
+//                loc = possibleExits.get(direction); //possibleExits.get("N") ; Get the integer corresponding to the direction entered based on the key that has been typed in
+//            }else{
+//                System.out.println("You cannot go in that direction");
+//            }
+//        }
 
-            if (loc == 0)
-                break;
 
-            //Get available exists for location specified and print them
-            Map<String,Integer> possibleExits = locations.get(loc).getExits(); // get map of valid exits from the current location which is : Road
-            System.out.print("Available exits are ");
-            for (String exitRoute : possibleExits.keySet()){
-                System.out.print(exitRoute + ", ");
-            }
-            System.out.println();
-
-            String direction = scanner.nextLine().toUpperCase(); // Get character from Keyboard corresponding to the direction: N , S , E , W
-            if (possibleExits.containsKey(direction)){
-                loc = possibleExits.get(direction); //possibleExits.get("N") ; Get the integer corresponding to the direction entered based on the key that has been typed in
-            }else{
-                System.out.println("You cannot go in that direction");
-            }
-        }
 
     }
 }
