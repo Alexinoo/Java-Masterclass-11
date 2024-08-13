@@ -1,9 +1,6 @@
 package java_collections.part4_comparable_and_comparator;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /*
  *  Comparable and Comparator
@@ -47,16 +44,26 @@ import java.util.List;
  *
  *      - pass the price to the Seat obj instance
  *
- *  - N
- *
  *
  *
  */
 
 public class Theatre {
     private final String theatreName;
-
     private List<Seat> seats = new ArrayList<>();
+
+    static final Comparator<Seat> PRICE_ORDER = new Comparator<Seat>() {
+        @Override
+        public int compare(Seat seat1, Seat seat2) {
+            if (seat1.getPrice() < seat2.getPrice())
+                return -1;
+            else if (seat1.getPrice() > seat2.getPrice())
+                return 1;
+            else
+                return 0;
+                
+            }
+        };
 
     public Theatre(String theatreName , int numOfRows , int numberOfSeatsPerRow) {
 
