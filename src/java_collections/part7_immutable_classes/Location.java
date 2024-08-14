@@ -62,7 +62,7 @@ public class Location {
     public Location(int locationId, String description, Map<String,Integer> exits) {
         this.locationId = locationId;
         this.description = description;
-        this.exits = exits;
+        this.exits = new HashMap<>(exits);
         this.exits.put("Q",0);
     }
 

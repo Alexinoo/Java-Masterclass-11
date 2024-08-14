@@ -168,8 +168,64 @@ import java.util.Scanner;
  * - And notice now , that if go North, we've suddenly got no South , and that's because we managed to remove it
  *   from the class that's calling our Location class and was able to delete part of the map
  *
- * - So had we created a Map for each location instead of reusing tempExit, we could have wercked havoc on the exits
- *   for all locations and not just the last one
+ * - So had we created a Map for each location instead of reusing tempExit, we could have wrecked havoc on the exits for all locations and not just
+ *   the last one, and the reason we were able to do this is because we still had a reference to the exits map for location 5 which was the forest
+ *
+ * ///
+ * - To cure this problem we need to use the same technique as we did for the getExits() only now we're going to apply it to a Setter instead of
+ *   a to Getter
+ * - What we mean by that , is in our constructor
+ *
+ *       public Location(int locationId, String description, Map<String,Integer> exits) {
+                this.locationId = locationId;
+                this.description = description;
+                this.exits = exits;
+                this.exits.put("Q",0);
+            }
+ *
+ *      - we need to change
+ *
+ *           this.exits = exits;
+ *
+ *      - to
+ *           this.exits = new HashMap(exits);
+ *
+ * ///
+ *  - If we run this now and go North again, we can now go South even if we've added code to remove "S" from the location5
+ *  - It hasn't affected our Location class at all because we've created a new HashMap based on the HashMap (exits) that was passed to us
+ *
+ * ///
+ *  - At this point , we could say that the class is now fully immutable , once an instance is created, it cannot be changed
+ *  - This means it could be used as a key to a map with no ill effects
+ *
+ *  - Though we did this to demonstrate the techniques not because there's any really good reason for making a Location a Key
+ *  - Even though we don't want to use it as a key though,  these techniques have resulted in a very secure class that fully encapsulates its fields
+ *  - Depending on the functionality a class must provide, it may not be possible to employ all these techniques
+ *  - They should certainly be considered and we should be doing this when we're creating our classes considering these things
+ *  - And as many of them as possible used in order to increase encapsulation and reduce errors as a result
+ *
+ * ///
+ *  - There's also 1 further step that Oracle recommends when creating a fully immutable classes
+ *
+ *  - Check strategies for defining immutable objects from Oracle doc through the link below
+ *
+ *      https://docs.oracle.com/javase/tutorial/essential/concurrency/imstrat.html
+ *
+ *  - We've covered
+ *      point -1 : don't provide setter methods
+ *      point -2 : make all fields final and private
+ *      point -3 : declare the class as final
+ *          - we didn't declare the calss as final but made all the fields final
+ *      point -4 : if the instances fields include references to mutable objects, don't allow those objects to be changed
+ *          - we do have references to a mutable object, the exits map
+ *          - we have removed addExit() that modified the map
+ *          - we also changed the constructor and getExits() so that we're not sharing references to the map
+ *
+ *  - It's not just overriding methods that can prevent our class from being immutable, adding new methods that expose our map would also do so
+ *    and obviously hence the instructions - it's probably more accurate to say don't allow the class to be subclassed
+ *      - Making a class final, prevents it from being subclassed
+ *
+ *      - A more sophisticated approach of making the constructor private also prevents the class from being subclassed
  */
 public class Main {
     private static Map<Integer, Location> locations = new HashMap<>();
