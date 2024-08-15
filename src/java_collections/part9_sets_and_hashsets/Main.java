@@ -212,6 +212,35 @@ package java_collections.part9_sets_and_hashsets;
  * - So if the HeavenlyBody class contains kilobytes of info on each body, the faulty reasoning is that it's more
  *   efficient to just store the String name in the Set<E> or whatever collection you're using for that matter
  * - But, a reference to a String is exactly the same size as a reference to any other object
+ * - So nothing is gained,and the code becomes more complex because the actual object has to be retrieved from that map before you can get any
+ *   details
+ * - If the id of the object was an integer rather than a String, then it might be tempting to store that in the sets , but this is also a false
+ *   optimization
+ * - On a 32-bit Java virtual machine, an int and an object reference both take 4 bytes
+ *      - a byte is 8 bits
+ *      - 4 bytes is 32 bits
+ * - On a 64 bit machine, the object reference would normally be 64 bits which of course is 8 bytes
+ * - But interestingly enough, Java 7 uses compressed pointers that can even end up even using less space than the 32-bit int
+ *      - Check the link below for more info on JVM
+ *          https://docs.oracle.com/javase/8/docs/technotes/guides/vm/performance-enhancements-7.html
+ *
+ * - There's 1 good reason for using the body's name in the Set<HeavenlyBody> and it's got nothing to do with using memory more efficiently
+ * - We've discussed making classes immutable, and the reason for doing that is so that they can be used as the keys in a map and a Set<HeavenlyBody>
+    has the same restrictions and warnings as Map<K,V> keys
+ *
+ * ///////
+ * Unfortunately though, our HeavenlyBody class can't be made immutable because new info is constantly being discovered about the planets even in our
+ *  Solar system
+ * So, modelling a more distant Solar system would certainly result in info about the bodies changing
+ *  - We've allowed moons to be added to planets, which is what makes our heavenly body class immutable but that's necessary
+ *
+ * Taking Saturn for example, currently over 60 moons have been identified and many of those have been discovered since 2000
+ * It's very likely that more will have to be added in the future
+ * There's also quite a few that haven't been named yet and they'll also be added at some point
+ *  - There's a good reason, the Instructor stopped adding moons when he got to Jupiter as you can see for that reason
+ * Java doesn't prohibit using mutable objects and Sets and it's Map keys , but there's some recommendations that should be followed and we'll look at
+ *  them in the next video
+ *
  *
  *
  *
