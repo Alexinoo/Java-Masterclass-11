@@ -144,6 +144,77 @@ import java.util.Set;
  *      - We're sort of simulating that by having an array of strings and then using the addAll()
  *      - Then pass Arrays.asList(String[] array) to convert it to ultimately to this Set in a convenient way
  *
+ * /////////// removeAll()
+ *
+ * - Transforms Set1 into the (asymmetric) set difference of S1 and S2.
+ * - For example, the set difference of s1 minus s2 is the set containing all of the elements found in s1 but not in s2
+ *      - Nature take out divine
+ *  - Let's figure out the asymmetric difference,
+ *      - nature take divine
+ *           Set<String> diff1 = new HashSet<>(natureSet);
+ *           diff1.removeAll(divineSet);
+ *           printSet(diff1);            [all, but, art, thee, nature, unknown]
+ *
+ *      - then divine take nature
+            Set<String> diff2 = new HashSet<>(divineSet);
+            diff2.removeAll(natureSet);
+            printSet(diff2);            [err, forgive, divine, human]
+ *
+ * - The asymmetric difference "nature take divine" will contain all the green words : [all, but, art, thee, nature, unknown]
+ * - The asymmetric difference "divine take nature" will contain all the blue words :  [err, forgive, divine, human]
+ *
+ * - Java doesn't have a method for calculating the asymmetric difference because it's used less often when dealing with Sets
+ *
+ * //// Symmetric difference
+ * - The Symmetric difference is the elements that appear in 1 set or the other but not both
+ *      - This can be therefore be defined as the Union Minus Intersection ( distinct in both sets)
+ *      - This will give us both the green and blue words
+ * - Because we know how to get the union and the intersection, we can get the symmetric difference by removing intersection from the union
+ *
+ * - Create a union of both natureSet and divineSet - using addAll()
+ *      Set<String> unionTest = new HashSet<>(natureSet);
+        unionTest.addAll(divineSet);
+ *
+ * - Create an intersection of both - filters only elements appearing on both sets - using retailAll
+ *      Set<String> intersectionTest = new HashSet<>(natureSet);
+        intersectionTest.retainAll(divineSet);  // [ is , to ]
+ *
+ * - Get the Symmetric difference
+ *      System.out.println("Symmetric Difference");
+        unionTest.removeAll(intersectionTest); [err,forgive,is,to,divine,human,all,but,art,thee,nature,unknown].removeAll[is,to]
+ *      printList(unionTest); [err,forgive,divine,human,all,but,art,thee,nature,unknown]
+ *
+ * - unionTest, now contains all the green and blue words and not the words in the intersection [is,to] which is the symmetric difference
+ *
+ *
+ * ////////// containsAll()
+ *  - returns true if s2 is a subset of s1. (s2 is a subset of s1 if set s1 contains all of the elements in s2.)
+ *  - Test if 1 set is a superset of another
+ *  - is actually non-destructive
+ *      - it only tests membership and doesn't actually modify the sets
+ *
+ *  - Example
+ *      natureSet.containsAll(divineSet); false - not a subset
+ *
+ *      natureSet.containsAll(intersectionTest); true - is a subset ;
+ *
+ *          [ is , to ] is a subset of [all, but, art, thee, nature, is, to, unknown]
+ *
+ *
+ *      divineSet.containsAll(intersectionTest); true - is a subset ;
+ *
+ *          [ is , to ] is a subset of [err,forgive,is,to,divine,human]
+ *
+ * ////// Why Using a Set matter..
+ *  - Set are very useful, if you want to get all the unique items in the collection
+ *  - HashSet class itself is very fast
+ *  - can be used as a way of grouping related items together even if you don't plan to perform mathematical Set operations on it
+ *
+ *
+ *
+ * ///// Add printList(Set<String> set)
+ *  - Takes a Set<String> and print them out
+ *
  */
 public class Main {
 
@@ -192,5 +263,53 @@ public class Main {
         String[] divineWords = {"to","err","is","human","to","forgive","divine"};
         divineSet.addAll(Arrays.asList(divineWords));
 
+
+        System.out.println("\n==============\n");
+
+        System.out.println("Nature set : "+natureSet);
+        System.out.println("Divine set : "+divineSet);
+
+        System.out.println("\n==============\n");
+
+        System.out.println("nature - divine:");
+        Set<String> diff1 = new HashSet<>(natureSet);
+        diff1.removeAll(divineSet); // [all, but, art, thee, nature, is, to, unknown].removeAll(err, forgive, is, to, divine, human)
+        printSet(diff1); // [all,but,art,thee,nature,unknown]
+
+        System.out.println("divine - nature:");
+        Set<String> diff2 = new HashSet<>(divineSet);
+        diff2.removeAll(natureSet); // [err,forgive , is , to , divine , human].removeAll[all,but,art,thee,nature,is,to,unknown]
+        printSet(diff2); // [err,forgive , divine , human]
+
+        //Symmetric Difference
+        Set<String> unionTest = new HashSet<>(natureSet);
+        unionTest.addAll(divineSet); //[err,forgive , is , to , divine , human , all, but, art, thee, nature,unknown]
+
+        Set<String> intersectionTest = new HashSet<>(natureSet);
+        intersectionTest.retainAll(divineSet);  // [ is , to ]
+
+        System.out.println("Symmetric Difference");
+        unionTest.removeAll(intersectionTest); //[err,forgive,divine,human,all,but,art,thee,nature,is,to,unknown].removeAll[is,to]
+        printSet(unionTest); // [err,forgive,divine,human,all,but,art,thee,nature,unknown]
+
+
+        // containsAll - subset of another set
+        if (natureSet.containsAll(divineSet)) {
+            System.out.println("divine is a subset of nature");
+        }
+
+        if (natureSet.containsAll(intersectionTest)) {
+            System.out.println("intersection is a subset of nature");
+        }
+
+        if (divineSet.containsAll(intersectionTest)) {
+            System.out.println("intersection is a subset of divine");
+        }
+
     }
+
+    private static void printSet(Set<String> set) {
+        System.out.println("\t"+set);
+    }
+
 }
