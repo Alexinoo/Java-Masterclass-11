@@ -497,8 +497,43 @@ Test cases:
 * ////// Test cases 4 and 6
 *
 * 4- Attempting to add a duplicate to a Map results in the original being replaced by new object.
+*       - We can change pluto back to a Planet
+*       - Remember we added Pluto again as a DwarfPlanet
+*
+*       - But let's change
+*
+*           HeavenlyBody plutoDuplicate = new DwarfPlanet("Pluto",842);
+            planets.add(plutoDuplicate);
+*
+*       - To a Planet instead
+*
+*           HeavenlyBody plutoDuplicate = new Planet("Pluto",842);
+            planets.add(plutoDuplicate);
+*
+*       - Sort of add a duplicate to the existing Pluto & we should get the value of the olf pluto overwritten
+*
+*       - If, we run this, we can see now , Pluto planet, 842 nad was updated
+*           - The 2nd entry is now null , because we no longer have a DwarfPlanet
+*
 *
 * 6- Two bodies with the same name but different designations can be added to the same map,and can be retrieved from the map.
+*      - Add Pluto
+*           - DwarfPlanet to : Map<HeavenlyBody.Key,HeavenlyBody> solarSystem
+*           - Has the same name with Pluto-Planet
+*
+*           solarSystem.put(plutoDuplicate.getKey(),plutoDuplicate);
+*
+*      - Retrieve both from the Map
+*            System.out.println(solarSystem.get(HeavenlyBody.makeKey("Pluto",HeavenlyBody.BodyTypes.PLANET)));
+*            System.out.println(solarSystem.get(HeavenlyBody.makeKey("Pluto",HeavenlyBody.BodyTypes.DWARF_PLANET)));
+*
+*
+* /////// Print the Entire SolarSystem map
+*   - Use a foreach and loop through the solarSystem.values()
+*       - Return type HeavenlyBody with a toString() that prints : name,bodyType and orbitalPeriod
+*
+*   - change plutoDuplicate to a DwarfPlanet
+*
 *
 */
 public class Main {
@@ -622,8 +657,30 @@ public class Main {
         System.out.println(earth2.equals(earth1)); // true
 
 
-        System.out.println(earth1.equals(plutoDuplicate)); // false
-        System.out.println(plutoDuplicate.equals(earth1)); // false
+        System.out.println(earth.equals(pluto)); // false
+        System.out.println(pluto.equals(earth)); // false
+
+
+
+        /// Test case 6 - Add duplicate
+        solarSystem.put(plutoDuplicate.getKey(),plutoDuplicate);
+        System.out.println(solarSystem.get(HeavenlyBody.makeKey("Pluto",HeavenlyBody.BodyTypes.PLANET)));
+        System.out.println(solarSystem.get(HeavenlyBody.makeKey("Pluto",HeavenlyBody.BodyTypes.DWARF_PLANET)));
+
+
+        //// Print entire solar system
+        System.out.println("===================================");
+        System.out.println("The solar system keys contains: ");
+        for (HeavenlyBody.Key heavenlyBody : solarSystem.keySet()) {
+            System.out.println(heavenlyBody);
+        }
+
+        //// Print entire solar system - orbital period
+        System.out.println("===================================");
+        System.out.println("The entire solar system contains: ");
+        for (HeavenlyBody heavenlyBody : solarSystem.values()) {
+            System.out.println(heavenlyBody);
+        }
 
     }
 }
