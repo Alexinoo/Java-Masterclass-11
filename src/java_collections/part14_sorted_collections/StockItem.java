@@ -18,8 +18,11 @@ package java_collections.part14_sorted_collections;
  *
  * Getters
  *  getName() : String
+ *
  *  getPrice() : double
+ *
  *  getQuantityStock() : int
+ *      - Renamed later to quantityInStock()
  *
  * Setters
  *  setPrice(double price) : void
