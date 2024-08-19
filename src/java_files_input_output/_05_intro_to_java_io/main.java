@@ -79,7 +79,7 @@ import java.util.Scanner;
  * ///////////////////////////
  *
  */
-public class Main {
+ class Main {
 
     private static Locations locations = new Locations();
     private static Map<String, String> vocabulary = new HashMap<>();
