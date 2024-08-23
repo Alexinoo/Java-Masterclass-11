@@ -7,6 +7,17 @@ import java.util.Scanner;
 /*
  * Catching and Throwing Exceptions
  *
+ * - Let's see if we can get the NoSuchElementException, to basically be invoked as an exception in our program
+ *
+ * - Currently our program is throwing InputMisMatchException but that's not the error we're looking for
+ *      - Type Ctrl+D
+ *      - Sends the ASCII EOT, End Of Transmission character to the program and that abruptly terminates any input
+ * - So by subclassing the NoSuchElementException, the creators of the Scanner class allowed programs finer control over how they respond to the
+ *   exception
+ *
+ *  - If we ctr+click on "NoSuchElementException" , notice how it extends RuntimeException and if we ctrl+click on "super()"
+ *
+ *
  */
 
 public class Main {
@@ -23,7 +34,7 @@ public class Main {
             x = getInt();
             y = getInt();
         }catch (NoSuchElementException e){
-            throw new ArithmeticException("no suitable input");
+            throw new NoSuchElementException("no suitable input");
         }
         System.out.println("x is "+ x + " y is "+y);
         try {
