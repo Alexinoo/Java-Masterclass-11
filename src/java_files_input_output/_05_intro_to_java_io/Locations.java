@@ -5,6 +5,84 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+/*
+ * Locations Class
+ *  - Implements Map<Integer,Location>
+ *
+ * Fields
+ *  locations : Map<Integer,Location>
+ *      - store our data or store our locations
+ *      - initialized it to a new HashMap()
+ *
+ * - Implement methods with "Alt+Ins" to implement various methods that are part of Map interface
+ *   - For example:
+ *      - size():int
+ *      - isEmpty() : boolean
+ *      - containsKey(Object key) : boolean
+ *      - containsValue(Object value) : boolean
+ *      - get(Object key) : V
+ *      - put(K key , V value) : V
+ *      - putAll() : void
+ *      - remove(Object key) : V
+ *      - clear() : void
+ *      - keySet() : Set<K>
+ *      - values() : Collection<V>
+ *      - entrySet() : Set<Entry<K,V>>
+
+ * - Next, customise the default code that is generated
+ *
+ * - size() : int
+ *      - returns locations.size()
+ *          - returns how many elements that are in our Map<Integer,Location> locations - HashMap
+ *
+ * - isEmpty() : boolean
+ *      - returns locations.isEmpty()
+ *      - returns true/false depending with whether we've got any elements in our Map<Integer,Location> locations - HashMap
+ *
+ * - containsKey(Object key) : boolean
+ *      - return locations.containsKey(key)
+ *      - returns true/false, if the key passed to this method exists in the Map<Integer,Location> locations
+ *
+ * - containsValue(Object value) : boolean
+ *      - return locations.containsValue(value)
+ *      - returns true/false, if the value passed to this method exists in the Map<Integer,Location> locations
+ *
+ * - get(Object key) : Location
+ *      - return Location obj mapped to the key passed to this method
+ *
+ * - put(Integer key , Location value) : Location
+ *      - adds element to the map - and returns the Location obj
+ *
+ * - remove(Object key) : Location
+ *      - removes Location specified by the key passed and returns it
+ *
+ * - clear() : void
+ *      - clear all the elements in the Map<Integer,Location> locations
+ *
+ * - keySet() : Set<Integer>
+ *       - returns all the Keys from Map<Integer,Location> locations as a Set<Integer>
+ *
+ * - values() : Collection<Location>
+ *       - returns the values in our Map<Integer,Location> locations object as a Collection<Location>
+
+ * - entrySet() : Set<Entry<Integer,location>>
+        - returns each entry in our Map<Integer,Location> locations as a Set<Entry<Integer,location>>
+ *
+ * //////////
+ *
+ * - So we're using a HashMap to store the Location just like the main class did and we have implemented the abstract
+ *   methods as required from the Map interface
+ *      - We won't be using all of them but then we had to and it's worth the effort to encapsulate the location data
+ *          this way
+ * - What we've just created is a class that pretty much behaves like a map, but which we can customize to load its
+ *   contents from an external source, a disk file in this case
+ *
+ * /////////
+ *  - Swing to the main class and start replacing the locations of map with our new class
+ *
+ *
+ */
+
 public class Locations implements Map<Integer,Location> {
     private static Map<Integer,Location> locations = new HashMap<>();
 
