@@ -17,6 +17,7 @@ public class Main {
         vocabulary.put("WEST","W");
         vocabulary.put("QUIT","Q");
 
+       // int loc = 1;
         int loc = 64;
 
         while (true){
