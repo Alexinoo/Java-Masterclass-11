@@ -66,9 +66,9 @@ public class Location {
         this.exits.put("Q",0);
     }
 
-//    public void addExits(String direction , int location){
-//        this.exits.put(direction,location);
-//    }
+    public void addExits(String direction , int location){
+        this.exits.put(direction,location);
+    }
 
     public int getLocationId() {
         return locationId;
