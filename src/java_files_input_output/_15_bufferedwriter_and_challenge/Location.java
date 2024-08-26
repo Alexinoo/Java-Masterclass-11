@@ -1,6 +1,5 @@
 package java_files_input_output._15_bufferedwriter_and_challenge;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -15,7 +14,7 @@ import java.util.Map;
  * Constructor
  *  Location(int locationId , String description)
  *      - Initialize locationId and description
- *      - Initialize exits Map to a new HashMap
+ *      - Initialize exits Map to a new LinkedHashMap
  *
  * Methods
  *
