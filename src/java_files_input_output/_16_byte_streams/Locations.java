@@ -5,6 +5,29 @@ import java.util.*;
 /*
  * Byte Streams
  *
+ * - We've looked at how to read and write text data using FileReader and FileWriter classes
+ * - We've also looked at buffering the data to make the program more efficient which reduces the disk access time
+ *    by reading larger chunks of the file into memory in case of a read operation or writing data to a buffer
+ *      - then saving a large chunk to a file ina single operation when writing
+ *
+ * /////
+ * - It's time to look at byte streams or binary data and we'll continue using our locations data for this example
+ *   but once we've covered how to read/write binary data, we'll switch over and use diff examples so that we don't
+ *   get too bored
+ *
+ * //////
+ * - To clarify what is happening in the static initialization block, when we run Locations.main(), the class has to
+ *   be loaded before it's main() can ultimately be executed
+ *      - This means the code in the static initialization block is executed before the main()
+ * - This means the locations and directions files have been read in before the main() is executed in this class
+ *
+ * //////
+ * - We'll start by rewriting the main() to save the data that's written by static initialization block in a binary
+ *   format
+ * - Once we've got a binary format to experiment with then we'll change the static initialization block to read
+ *   from this newly created file
+ * - In terms of binary data, 1 advantage of dealing with data or byte stream is that we don't have to parse the data
+ *    into various data types that were stored
  *
  *
  */
