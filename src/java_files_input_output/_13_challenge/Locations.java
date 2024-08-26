@@ -4,7 +4,24 @@ import java.io.*;
 import java.util.*;
 /*
  * Challenge
- *  - Rewrite with try-with-resources
+ *  - Rewrite the static initialization block in lecture "_12_loadbiglocation_exitfiles" package using
+ *    try-with-resources instead of try-finally
+ *
+ *
+ * ////
+ * - You may have noticed that we stopped needing a scanner to read the exits when we changed the code to read a
+ *   line at a time and split it
+ * - Removing a Scanner is quite easy and we can get rid of it all together and use a BufferedReader instead
+ *      BufferedReader dirFile = new BufferedReader(new FileReader("directions_big.txt"))
+ *
+ * - Declare an input of type String variable
+ *      String input;
+ *
+ * - Loop as long as dirFile.readLine() doesn't return null
+ *        while ( (input = dirFile.readLine()) != null)
+ *
+ * - Use the split() to split the String input into an array using a comma delimiter
+ * - Extract the required fields and parse if necessary to convert to integers
  */
 
 public class Locations implements Map<Integer, Location> {
