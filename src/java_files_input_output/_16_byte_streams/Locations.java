@@ -3,7 +3,7 @@ package java_files_input_output._16_byte_streams;
 import java.io.*;
 import java.util.*;
 /*
- * Byte Streams
+ * Java IO - Byte Streams
  *
  * - We've looked at how to read and write text data using FileReader and FileWriter classes
  * - We've also looked at buffering the data to make the program more efficient which reduces the disk access time
@@ -165,7 +165,34 @@ import java.util.*;
  * - Let's look at how various shift operations result in the 4 bytes being extracted to the file
  *
  * - The first case : (v >>> 24) - Right Shifting by 24 bits
- *      - results in the value : 00110110 , which is Hex 36 or 54 in decimal being moved to the right most byte
+ *      - results in the value : 00110110 , which is Hex 36 or 54 in decimal being moved to the right most byte with all other bytes containing 0
+ *      - we get : 00000036
+ *
+ * - The next Shift Operation : (v >>> 16)
+ *      - As we move down, the next shift operation shifts right 16 bits,
+ *      - results in the value : 0011011011111001 in binary , F9 in Hex and 249 in decimal
+ *      - we get : 000036f9
+ *
+ * - The next Shift Operation : (v >>>  8) - Shifts Right 8 bits
+ *      - results in the value : 001101101111100111010110 in binary, D6 in Hex and 214 in decimal
+ *      - we get : 0036F9D6
+ *
+ * - And final Shift Operation : (v >>> 0)
+ *      - shift rights 0 place does nothing and the value remains unchanged
+ *
+ * ////////////
+ * - Because only the single rightmost byte should be written each time the shifted value is ended, with the Hex value FF which is 0000FF when stored
+ *   as an integer
+ * - This results in a higher 3 bytes being cleared to 0 giving the value that must be written to the file
+ *
+ *
+ * /////
+ * - Since we got the DataOutputStream class , we don't have to worry about any of this , but there could be situations where you may have to deal
+ *   with raw data streams at some point and might be useful to understand what's going on
+ *
+ * ////
+ * - We'll create a new Java file - Shifting - and we'll print some values out that ultimately will be written out and see what is probably happening
+ *   at a lower level than we're used to
  *
  */
 
