@@ -113,6 +113,21 @@ import java.util.*;
  * - This is actually fine because a file containing serializable objects is meant to nbe read by a java application and not by human or an IDE
  *
  *
+ * //////
+ * - If we take a closer look at the top of the "locations.dat" file, you can see that the package name's there and if you look carefully, there's
+ *   some class names as well
+ * - Before we move on to reading the objects, note that the DataOutputStream implements the DataOutput interface and the DataInputStream
+ *   implements the DataInput interface
+ * - The DataOutput and DataInput interfaces, contain the declarations for the writeInt() and readInt as well as as writeUTF() and readUTF() methods
+ *    and other read/write specific type methods
+ * - Because of that, object streams can contain a mix of serialized objects and primitive types
+ *      - They're not limited to only containing serialized objects
+ * - In our case we don't need to mix objects and primitives, but we could do if we actually needed to
+ *
+ *
+ * //////
+ * - Modify the static initializer block to now read from the "locations.dat" file
+ *      - Create an ObjectInputStream obj
  */
 
 public class Locations implements Map<Integer, Location> {
