@@ -104,8 +104,8 @@ import java.util.Set;
  * /////////
  * - Our file format will look like the following :-
  *
- *      - The first 4 bytes will contain the number of locations (bytes 0-3)
- *      - The next 4 bytes will contain the start offset of the locations section (bytes 4-7)
+ *      - The first 4 bytes will contain the number of locations (bytes 0-3) - 141
+ *      - The next 4 bytes will contain the start offset of the locations section (bytes 4-7) - 1696
  *      - The next section of the file will contain the index ( the index is 1692 bytes long - will start at byte 8 - 1699)
  *      - The final section of the file will contain the location records (the actual data for the game - will start at byte 1700).
  *
@@ -124,20 +124,157 @@ import java.util.Set;
  * ////////
  * - We'll change our application to use a random access file and to load the locations on demand
  *
- * - It will
+ *
+ * ////////////////////////////
+ *
+ * Create A Random Access File
+ *
+ * ////////////////////////////
+ *
+ * - Let's start changing our application to use a Random Access File and then to load these locations for the game on demand
+ * - We'll use Locations.main() to use random access file to write out the locations
+ *
+ * - First step
+ *   - Inside the try-with resources block
+ *      - Create RandomAccessFile instance and pass the file name to RandomAccessFile's constructor
+ *          RandomAccessFile rao = new RandomAccessFile("locations_rand.dat","rwd")
+ *
+ *          - RandomAccessFile takes the filename as the first arg , which is the file that we'll be writing to
+ *          - The second arg indicates that we want to open the file for reading and writing and also we want writes to occur synchronously
+ *          - You can open files as read only and we can also not specify that updates to the file have to occur synchronously
+ *          - But if we do that and multiple threads can access the file , you'd actually be responsible for synchronizing the code yourself
+ *              - In this case, it doesn't matter since it's only 1 thread that will access the file
+ *              - But it's good to have the RAF class handle the synchronization when it does matter and therefore using rwd as the 2nd arg is
+ *                 a good idea
+ *
+ *      - Write the number of locations to the file, by calling writeInt() on RandomAccessFile instance
+ *           rao.writeInt(locations.size());
+ *
+ *      - Write the start offset of the locations section and once again since the file pointer is positioned correctly, we can go ahead and
+ *         use writeInt
+ *
+ *      - Since the file pointer is positioned at byte 0, when a file is first created or opened, we don't have to call seek()
+ *
+ * - We're going to call the variable we use to read the file something different so we don't confuse it with the one that we're using here which
+ *    is the one we're writing the locations with
+ *
+ * //////
+ * - Each index record will contain 3 integers
+ *      - location id
+ *      - offset for the location
+ *      - size or length of the location record
+ *
+ * - We're calculating the indexSize by noOfLocations by noOfInts contained in each record , in this case 3 by the numOfBytes contained in an integer
+ *      indexSize = locations.size() * 3 * Integer.BYTES; // 1692
+ *
+ * - We're calculating the current position of the file pointer to the indexSize, to account for the value that we've already written to the file
+ *      locationStart = (int) (indexSize + rao.getFilePointer() + Integer.BYTES);  // 1696
+ *
+ *      - we also have to account for the integer we're about to write to the file, the location section offset we just created and we need to add
+ *        the number of bytes to an integer
+ *      - this will give us offset for the location section
+ *      - cast to an int because the file pointer is a long value
+ *
+ *      - As an alternative we could also have added the index size to the size of 2 bytes , but we can use file pointer wherever possible
+ *      - We could have written a long , but we're going to read-write ints wherever possible
+ * - If we were working with an application with lots of data, such that the file offsets could be larger than an int could hold, then we'd have to
+ *    stick to longs to make sure we don't exceed the maximum size of an int
+ *
+ * ///////
+ * - The next section in the file is the index, but before we can write the index , we have to write the locations and that's because each index record
+ *   requires the offset for the location, and of course we don't know the offset until we've written the location
+ * - We could
+ *      - write the location
+ *      - and then write the index record for it,
+ *      - and then write the next location
+ *      - and then write the index record for it and so on and so forth but that will involve jumping back and forth in the file
+ * - Disk access is expensive and it's even more expensive when it's not sequential
+ * - What we can do is write all the locations and then we'll write the index as a whole
+ * - To do that, we'll have to build the index in memory as we write the locations
+ * - Since we want to jump back to the file when we're finished writing the locations, we'll save the current position of the file pointer so that
+ *    we can jump back to it when we want to write the index since we'll write the index after the 2 integers we've already written,
+ * - we'd be writing it to offset 8 which is where the file pointer was currently positioned after writing the no of locations and the location
+ *    section offset
+ *      long indexStart = rao.getFilePointer()
+ *
+ * ///////////////
+ * - At this point, we're ready to write the locations
+ * - We've already calculated the offset of the locations data section and we're going to assign that to a variable called startPointer which will
+ *   update after writing each location
+ * - And then we'll
+ *      - loop through the locations
+ *      - write out each location
+ *      - create an index for it
+ *      - and add an index record to a map
+ *
+ * ///////
+ * - To do all this we need an index record class and we'll add a new Java class called IndexRecord to our project
+ *
+ * - Fields
+ *      int : startByte
+ *      int : length
+ *
+ * - Constructor
+ *      IndexRecord(int startByte, int length)
+ *
+ * - Getters
+ *      getStartByte() : int
+ *      getLength() : int
+ *
+ * - Setters
+ *      setStartByte(int startByte) : void
+ *      setLength(int length) : void
+ *
+ * /////////
+ * - We said that an index record could contain the location id, start offset and length , and when we load the index records into memory, the
+ *   location id will act as a map key and that's why we don't have to store it in the class
+ *
+ *
+ * //////
+ * - Let's now start to write out each location
+ *
+ *
+ *
+ *
  *
  */
 
 public class Locations implements Map<Integer, Location> {
     private static Map<Integer, Location> locations = new LinkedHashMap<>();
+    private static Map<Integer,IndexRecord> index = new LinkedHashMap<>();
 
     public static void main(String[] args) {
         try(RandomAccessFile rao = new RandomAccessFile("locations_rand.dat","rwd")) {
-            rao.writeInt(locations.size());
+            rao.writeInt(locations.size()); // 141
 
-            int indexSize = locations.size() * 3 * Integer.BYTES;
-            int locationStart = (int) (indexSize + rao.getFilePointer() + Integer.BYTES);
-            rao.writeInt(locationStart);
+            int indexSize = locations.size() * 3 * Integer.BYTES; // (141 * 3 * 4) = 1692
+            int locationStart = (int) (indexSize + rao.getFilePointer() + Integer.BYTES); // (1692 + 0 + 4) = 1696
+            rao.writeInt(locationStart); // writes 1696
+
+            long indexStart = rao.getFilePointer();
+
+            int startPointer = locationStart;
+            rao.seek(startPointer);
+
+            for (Location location : locations.values()){
+                rao.writeInt(location.getLocationId());
+                rao.writeUTF(location.getDescription());
+                StringBuilder builder = new StringBuilder();
+                for (String direction : location.getExits().keySet()){
+                    if (!direction.equalsIgnoreCase("Q")) {
+                        builder.append(direction);
+                        builder.append(",");
+                        builder.append(location.getExits().get(direction));
+                        builder.append(",");
+                    }
+                }
+                rao.writeUTF(builder.toString());
+
+                IndexRecord record = new IndexRecord(startPointer , (int)rao.getFilePointer() - startPointer);
+                index.put(location.getLocationId(), record);
+
+                startPointer = (int) rao.getFilePointer();
+            }
 
         }catch (IOException io){
             io.printStackTrace();
@@ -147,7 +284,7 @@ public class Locations implements Map<Integer, Location> {
 
     static {
         System.out.println("======================== Loading.... static initialization block =================");
-        try(ObjectInputStream locFile  = new ObjectInputStream(new BufferedInputStream(new FileInputStream("locations.dat")))){
+        try(ObjectInputStream locFile  = new ObjectInputStream(new BufferedInputStream(new FileInputStream("locations_rac.dat")))){
             boolean eof = false;
             try{
                 while (!eof){
