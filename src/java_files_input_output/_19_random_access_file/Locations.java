@@ -6,7 +6,32 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 /*
- * Random Access File
+ * Java IO - Random Access File
+ *
+ * - So far, we've been reading and writing files sequentially, we start at byte 0 and we read and write bytes one
+ *    after the other until we reach the end of the file or until we finish writing the data
+ *      - we don't jump around in the file in other words
+ * - For example,
+ *      - we don't read bytes 20 to 35 in the file
+ *      - and then read bytes 50 to 100
+ *      - and then bytes 10 to 15
+ *
+ * - And likewise,
+ *      - we don't write out bytes 100 to 150
+ *      - and then bytes 20 to 30
+ * - So far, we've only moved forward and we've done so without skipping any bytes
+ *
+ * ////////
+ * - Let's actually say we have thousands of locations in our file, so many that we don't want to store the locations
+ *   in memory because they take up too much room
+ * - So instead, every time a player moved to a new location, we would read that location from the file
+ * - To do that , we need to jump to the place in the file where the information for that location is stored rather
+ *    than reading the file sequentially we'd need to read it in a random fashion
+ * - This is where the Random Access File class comes in
+ * - But honestly, it would be far more efficient if in that scenario to use an embedded database like sql lite
+ *   especially when we've got 2 data sets that are related to each other as we do in this case with locations and exits
+ *      - Because of course every location has a set of exits
+ * - But let's just pretend that for whatever reason we have to use a flat file
  *
  * - The first 4 bytes will contain the number of locations (bytes 0-3)
  * - The next 4 bytes will contain the start offset of the locations section (bytes 4-7)
