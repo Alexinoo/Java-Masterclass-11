@@ -127,7 +127,98 @@ import java.util.*;
  *
  * //////
  * - Modify the static initializer block to now read from the "locations.dat" file
- *      - Create an ObjectInputStream obj
+ *      - Create an ObjectInputStream obj - locFile in a try-with-resources block
+ *
+ *          ObjectInputStream locFile  = new ObjectInputStream(new BufferedInputStream(new FileInputStream("locations.dat")))
+ *
+ *          - everything else remains unchanged and we're still using BufferedInputStream to buffer the data
+ *
+ *      - Read the contents of the locFile obj by calling readObject() on locFile instance
+ *
+ *          Location location = (Location) locFile.readObject();
+ *
+ *          - takes care of reading all the fields and the exits
+ *          - locFile.readObject() returns an object and so we have to cast it to a Location obj
+ *
+ *      - Loop as long as eof is false and once EOFException is thrown
+ *          - create a try - catch block
+ *              - Extract both locationId and description() from location obj created by the readObject()
+ *
+ *              - Add the locationId and the location obj to the locations-HashMap
+ *
+ *          - catch EOFException
+ *              - set eof boolean variable to true
+ *
+ *      - Catch IOException for try-with-resources
+ *      - Catch ClassNotFoundException
+ *          - is thrown when the runtime reads an object from the stream and it can't find the corresponding class
+ *             on the class path
+ *          - For example,
+ *              - With another application that didn't contain the Location class tries to read the objects inside the
+ *                locations of that file, then it would actually get a class not found exception
+ *
+ * /////////
+ *  - Run Locations.main() and confirm the locations and exits are read correctly
+ *  - Run Main.main() and ensure that the game is still working fine
+ *
+ * ////
+ *  - The game is still working and we can agree that the code is a lot easier to read
+ *
+ *
+ * /////
+ * - For fun, let's temporary comment out the declaration of the serialVersionUID in the Location class
+ * - If we run this again from the Main.main(), we get an error
+ *      - an IOException
+ *      - a NullPointerException as a result of the first one
+ * - And this is because we didn't explicitly set the serial version id, and therefore the compiler assigned one
+ *   when it recompiled the Location class
+ * - However, it no longer matches the value we wrote to the file which was 1L and an exception is thrown when we
+ *    try to read objects from the file
+ * - And therefore, we have to uncomment the line the line
+ *      //private long serialVersionUID = 1L;
+ * - For this to work
+ *
+ *
+ * /////
+ * - We talked about an InvalidClassException would be thrown when the serialVersionUID don't match
+ * - InvalidClassException is a sub class of IOException and so the existing catch block also catches the invalid
+ *   class exception
+ * - So let's go ahead and catch that first before catching the IOException first
+ * - But before we run it let's first comment out the serialVersionUID again
+ *      //private long serialVersionUID = 1L;
+ *
+ * //////
+ * - And now when we run this, we actually get InvalidClassException thrown because for the same reason, the
+ *   serialVersionUID no longer match
+ * - Uncomment
+ *      //private long serialVersionUID = 1L;
+ * - run it again and this time, it should work
+ *
+ *
+ *
+ * //////
+ * - Before we leave this topic, let's touch on what happens when 2 objects that we serialize point to the same
+ *   object
+ * - Let's say we want to serialize a class called foo, which contains a field for a bar object
+ * - Now if 2 foo instances point to the exact same bar instance and we serialize the 2 foo instances to a file,
+ *    the question is , will the file contain 2 bar objects or just one ?
+ *      - Well, the answer is it'll only contain one
+ * - Since both foo instances refer to the same bar instance, only 1 bar instance is serialized
+ * - In other words, a serialized file will only ever contain one copy of the same instance which is cool
+ *
+ *
+ * /////
+ * - But now imagine that we want to do the same thing , but for some reason we want to create 2 files
+ * - So, we write both foo instances to file 1 and then both to file 2
+ * - So how many instances of bar will be written this time
+ *      - Well the answer in that case will be 2
+ *      - Object instances will be unique within a file ,but not across files
+ * - In this case, when the 2 files are read back into an application, 2 distinct instances of bar would be created
+ *
+ *
+ * /////
+ * - Next, let's take a closer look at the java.io.random access file class
+ *
  */
 
 public class Locations implements Map<Integer, Location> {
@@ -159,11 +250,45 @@ public class Locations implements Map<Integer, Location> {
             }catch (EOFException e){
                 eof = true;
             }
+        }catch(InvalidClassException ice){
+            System.out.println("InvalidClassException "+ice.getMessage());
         }catch(IOException io){
             System.out.println("IOException "+io.getMessage());
         }catch (ClassNotFoundException cnfe){
             System.out.println("ClassNotFoundException "+cnfe.getMessage());
         }
+
+        ///////////////////////////////////////////
+        ////////////////////////////////////////////
+
+        /* Read via DataInputStream class - Once the file "locations.dat" is written - comment out and use the code
+        *  above to read via ObjectInputStream
+
+        try(DataInputStream locFile  = new DataInputStream(new BufferedInputStream(new FileInputStream("locations.dat")))){
+            boolean eof = false;
+            while (!eof){
+                try{
+                    Map<String,Integer> exits = new LinkedHashMap<>();
+                    int locId = locFile.readInt();
+                    String description = locFile.readUTF();
+                    int numExits = locFile.readInt();
+                    System.out.println("Read Location "+locId+ " : "+description);
+                    System.out.println("Found "+numExits+ " exits");
+                    for (int i = 0; i < numExits; i++) {
+                        String direction = locFile.readUTF();
+                        int destination = locFile.readInt();
+                        exits.put(direction,destination);
+                        System.out.println("\t\t"+direction+ ","+destination);
+                    }
+                    locations.put(locId , new Location(locId,description,exits));
+                }catch (EOFException e){
+                    eof = true;
+                }
+            }
+
+        }catch (IOException e){
+            System.out.println("IO Exception");
+        } */
         System.out.println("======================== static initialization block Loaded.. =================\n\n");
     }
 
