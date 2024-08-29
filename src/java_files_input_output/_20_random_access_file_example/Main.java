@@ -5,6 +5,8 @@ import java.io.RandomAccessFile;
 
 public class Main {
     public static void main(String[] args) {
+        System.out.println("Size of int in bytes: " + Integer.BYTES);
+
         try {
             // Create a new RandomAccessFile with read-write mode ("rw")
             RandomAccessFile raf = new RandomAccessFile("RandomAccessFileExample.txt", "rw");
