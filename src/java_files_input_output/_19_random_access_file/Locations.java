@@ -209,21 +209,8 @@ import java.util.Set;
  *
  * ///////
  * - To do all this we need an index record class and we'll add a new Java class called IndexRecord to our project
+ * - Create IndexRecord class
  *
- * - Fields
- *      int : startByte
- *      int : length
- *
- * - Constructor
- *      IndexRecord(int startByte, int length)
- *
- * - Getters
- *      getStartByte() : int
- *      getLength() : int
- *
- * - Setters
- *      setStartByte(int startByte) : void
- *      setLength(int length) : void
  *
  * /////////
  * - We said that an index record could contain the location id, start offset and length , and when we load the index records into memory, the
@@ -234,14 +221,299 @@ import java.util.Set;
  * - Let's now start to write out each location
  *
  *
+ * ///////
+ * - We'll start by setting the offset for the first location into a variable called startPointer
+ *      int startPointer = locationStart;
+ *
+ *      - We need to use this value to calculate a location's record length after we've written it to the file
+ *
+ * - We use seek() to move the file pointer to the first location's offset
+ *
+ *       rao.seek(startPointer);
+ *      - We only need to do this for the first location because after that , we write all the data sequentially
+ *
+ * - Then we loop through all the locations and for each location
+ *      - we write the location id, description and
+ *      - then loop through the exits for each location and appends the exits to a String builder, the same way they were written
+ *
+ * /////////
+ * - One drawback to using the RandomAccessFile is that we can't read write objects
+ * - The RandomAccessFile class doesn't contain readObject() and writeObject() unfortunately
+ * - So, it's back to writing each piece of data individually
+ * - Also, notice that we're not using a BufferedStream, and it wouldn't make sense when accessing a file randomly because buffering is just like a
+ *   queue - what goes in first is read or written first and in other words it's sequential
+ * - So RandomAccessFile can't be chained with other types of IO classes unlike the stream and file classes we've previously used, it can be used for
+ *   both reading and writing
+ * - So when we actually write a location, we build an exit string with a StringBuilder like below
+ *      e.g. direction, locationId , direction , locationId ,
+ *           N,1,U,2,
+ *
+ *      - The string ends with a trailing comma, which we don't need , and if we wanted to be diligent enough, we would not write it for the last
+ *         location
+ *
+ *      - and then we write the builder string
+ *
+ *           rao.writeUTF(builder.toString());
+ *
+ * - Next, is to create the index record
+ *      - with the first byte for this location is equal to the start pointer value and the record length is the current position of the file pointer,
+ *          but then we're deducting the file pointer
+ *
+ *          rao.getFilePointer() - startPointer
+ *
+ *      - it's the current position of the file pointer minus the start pointer
+ * - Then we're adding the index record for the location using the locationId as the key
+ *
+ *          index.put(location.getLocationId(), record);
+ *
+ * - Then we update the startPointer for the next location
+ *
+ *          startPointer = (int) rao.getFilePointer();
+ *
+ * //////////
+ * - At this point, we've written the location to the file and we can now write our index because we've got the full list of indexes available
+ *
+ *       rao.seek(indexStart);
+            for (Integer locationId : index.keySet()){
+                rao.writeInt(locationId);
+                rao.writeInt(index.get(locationId).getStartByte());
+                rao.writeInt(index.get(locationId).getLength());
+            }
+ *
+ *      - we're seeking to the offset that we've saved previously with the indexStart and we set that to the offset previously, so we knew what
+ *          that would be
+ *      - next, we're looping through all the index records using the index.keySet() and writing them to the file
+ *
+ *
+ * ////////////
+ * - Running Locations.main()
+ *  - We can see at the top of "locations_rand.dat" generated, this is the part where we're saving lots of ints
+ *  - And we can see that the file isn't readable, but if we look down the file, we can see some strings in the location section that do appear to
+ *    make more sense, and we can see the actual exits
+ *
+ * ///////////////////////////////////////////////////////////
+ * ///////////////////////////////////////////////////////////
+ *
+ * Update Static Initializer Block With Random Access File
+ *
+ * ///////////////////////////////////////////////////////////
+ * ///////////////////////////////////////////////////////////
+ *
+ * - We want to change the static initializer so that it reads the index from the file
+ * - Note that we won't be loading the locations into memory anymore - we'll load locations on demand
+ * - What this means is that our Locations.main() will no longer work because it depends on all the locations being loaded into memory
+ * - So, if we wanted to run the method again, we'd have to change the static initializer to load all the locations but then that would defeat the
+ *   purpose
+ * - The instructor recommends that if we need to run the Locations.main() again, we copy a static initializer that uses a BufferedReader or
+ *   InputStream from an older project into this project's Locations class and this will read the locations from locations_big.txt into the locations map
+ * - Once you've done that, then you comment out the Random Access File static initializer
+ *
+ * ////////
+ * - Let's now write the static initializer that uses the RandomAccessFile
+ * - First
+ *      - We have to declare a field for the RandomAccessFile
+ *          private static RandomAccessFile ra;
+ * - Then comment out on the old code that was reading from "locations_rac.dat" via ObjectInputStream
+ *
+ * - Second
+ *      - use a try block
+ *          - Open the RandomAccessFile that we've generated and store that to RandomAccessFile ra object that we created
+ *          - read the number of locations into a variable
+ *          - read the offset of the location section
+ *          - the load the index into memory
+ *          - we're looping through until the file pointer reaches the locations offset
+ *              - read the index and creating the records and saving new index record
+ *          - we're not using numOfLocations but it's a good practice to write the number of records in each file section at the beginning of a file
+ *             that will be accessed in a random fashion
+ *              - we might need it later on if we want to modify the application - just for future reference
+ *
+ *      - catch IOException
+ *          - and print the error message
+ *
+ * - At this point, we're actually done, we've written the static initializer block , but hold your horses, our application won't work because the
+ *    way it's currently written it assumes that the locations are all available in memory but that's no longer true anymore
+ *
+ * - When a player moves to a location, we have to load that location from the data file - let's start working on that in the next video
  *
  *
  *
+ * /////////////////////////////////////////////////
+ * /////////////////////////////////////////////////
+ *
+ * Update Adventure Game to Read Random Access File
+ *
+ * /////////////////////////////////////////////////
+ * /////////////////////////////////////////////////
+ *
+ * - Currently, the way our application is written, it assumes that the locations are all available in memory, so it actually loads all the locations
+ *   in memory but now that's no longer true
+ * - What we need to do is now when a player moves to a location we have to load that location from the RAF that we've created
+ *
+ * - To achieve that we need a getLocation() in the Locations class and we also have to close the file when the player quits, so we'll need to add a
+ *   close()
+ *
+ *
+ * //// close()
+ * - Let's add a close() mainly because it's going to be easy
+ *      - Closes the RAF file when the player quits the game
+ *      - The reason we're throwing IOException, is that we're going to let all the exceptions bubble up to the OS, meaning that the app is going
+ *         to exit and the exceptions will be written to the console and we won't be doing any processing with any exceptions we do get
+ *
+ *
+ * //// getLocation(int locationId)
+ *  - Will be used any time a player moves to a new location
+ *  - We'll return a Location obj and we'll get location id passed as an argument and we'll throw an IO exception and we'll not deal with them directly
+ *    in this method
+ *
+ *      - get IndexRecord from the index Map
+ *          IndexRecord record = index.get(locationId);
+ *
+ *      - start accessing the file and point to the correct offset access to this location
+ *          - we get the startByte and move the file pointer to the locations offset by using the seek()
+            ra.seek(record.getStartByte());
+
+        - read the id
+            int id = ra.readInt();
+
+        - read location description
+            String description = ra.readUTF();
+
+        - read the exits as a String
+            String exits = ra.readUTF();
+
+        - Extract various exits into an array with split(",") with comma as the delimiter
+            String[] exitParts = exits.split(",");
+
+        - create a new Location obj that initially has no exits -  pass null as a 3rd arg to Location constructor
+             - initialize the exits to a new LinkedHashMap in the Location class
+
+            Location location = new Location(locationId,description, null);
+
+        - loop through the exits and extract specific parts : direction and destination (which location it leads to)
+            - add exists to the Location obj
+
+            if (locationId != 0){
+                for (int i = 0; i < exitParts.length; i++) {
+                    System.out.println("exitPart = "+exitParts[i]);
+                    System.out.println("exitPart[+1] = "+exitParts[i+1]);
+                    String direction = exitParts[i];
+                    int destination = Integer.parseInt(exitParts[++i]);
+                    location.addExit(direction,destination);
+                }
+            }
+
+        - return the Location obj that we have built up
+            return location;
+ *
+ * - This should now grab the location from the RAF
+ *      - It builds up the description and the exits
+ *      - Creates the Location obj and then adds the various exits to the Location and then returns it
+ *
+ *
+ * //////
+ * - But how does the readUTF() knows how many bytes of a description String that it's suppose to read ?
+ *      - Because if you think about it, it can't really know by magic how long the description is ...
+ *      - The reason it knows is because the writeUTF() actually writes the length of the String followed by the String itself
+ * - Therefore the readUTF() , reads the length first and then it reads the appropriate no of bytes
+ *
+ *
+ * //////
+ * - At this time now we have getLocation() that we can use anytime we move the player or the player moves to a different location
+ * - So, what we now need to do is go to the Main.main() and actually add the call to the getLocation() rather than geting the location info
+ *   from a map
+ *
+ *
+ * //// Main.main()
+ *
+ * - Basically before, while(true) , we're going to start of by retrieving the current location - 64
+ *       Location currentLocation = locations.getLocation(loc);
+ *
+ *      - then throw IOException from the main()
+ *
+ * - Then instead of accessing the current location this way
+ *
+ *       System.out.println(locations.get(loc).getDescription());
+ *
+ *      - we'll do it this way
+ *
+ *      System.out.println(currentLocation.getDescription());
+ *
+ * - Remove the entire definition of loc
+ *      int loc = 64;
+ *
+ *      - and hard code it as
+ *
+ *      Location currentLocation = locations.getLocation(64);
+ *
+ * - Then change the following code
+ *       if (loc == 0)
+                break;
+ *
+ *      - to
+ *
+ *        if (currentLocation.getLocationId() == 0)
+                break;
+ *
+ * - Then change the Map that is using current location id from
+ *       Map<String,Integer> possibleExits = locations.get(loc).getExits();
+ *
+ *      - to
+ *
+ *      Map<String,Integer> possibleExits = currentLocation.getExits();
+ *
+ * - Then down here were we're updating loc variable
+ *
+ *       if (possibleExits.containsKey(direction)){
+                loc = possibleExits.get(direction);
+            }
+ *
+ *      - we may want to change that to update the currentLocation obj as follows
+ *
+ *       if (possibleExits.containsKey(direction)){
+                currentLocation = locations.getLocation(currentLocation.getExits().get(direction));
+            }
+ *      - we're updating our current location and moving to whatever direction that was actually selected by the user and updating our current location
+ *
+ *  - So, consequently, when the while loop goes again , we can print out the description of the new room and we're doing some other tests to see
+ *    whether at location 0 to break out and also updating our exits by using the currentLocation.getExits()
+ *
+ * ////////
+ * - One last thing that we need to do is after exiting the while loop is call close() from the Locations class
+ *      - close that file when the player has exited the game
+ *
+ *
+ * /////
+ * - At this point with the various changes we've made, we should be able to run the application and play it exactly the same as we've done before
+ *
+ * ///// Running Main.main() and see if it actually works
+ *      - Navigate to various directions
+ *      - change currentLocation to 1 to make sure we're standing at the right place
+ *          - Store it as static variable as follows
+ *
+ *          private static int STARTING_LOCATION = 1;
+ *
+ * /// Running Main.main() and move to different places
+ *      - Working perfectly
+ *
+ * //////////////
+ * - We can see now that we've now modified our entire application here and we're no longer reading all the locations to memory
+ * - We've now got the basic shell of a game that could potentially have thousands or perhaps even tens of thousands of different locations and
+ *    we haven't got any problems with the amount of memory we're consuming for that because we're only loading in the locations one at a time
+ *    directly from RAF
+ *      - In other words, they are loaded on demand
+ *
+ * ////////////////
+ * - At this point, we now know how to use a Random Access File to load data on demand
+ * - We move the file pointer to the offset we want to read and then we read it
+ * - And as we've learnt, if we're reading and writing data sequentially, we don't have to explicitly move the file pointer ourselves but in a random
+ *   file access scenario of course we'll need to do that
  */
 
 public class Locations implements Map<Integer, Location> {
     private static Map<Integer, Location> locations = new LinkedHashMap<>();
     private static Map<Integer,IndexRecord> index = new LinkedHashMap<>();
+
+    private static RandomAccessFile ra;
 
     public static void main(String[] args) {
         try(RandomAccessFile rao = new RandomAccessFile("locations_rand.dat","rwd")) {
@@ -276,6 +548,13 @@ public class Locations implements Map<Integer, Location> {
                 startPointer = (int) rao.getFilePointer();
             }
 
+            rao.seek(indexStart);
+            for (Integer locationId : index.keySet()){
+                rao.writeInt(locationId);
+                rao.writeInt(index.get(locationId).getStartByte());
+                rao.writeInt(index.get(locationId).getLength());
+            }
+
         }catch (IOException io){
             io.printStackTrace();
         }
@@ -284,7 +563,27 @@ public class Locations implements Map<Integer, Location> {
 
     static {
         System.out.println("======================== Loading.... static initialization block =================");
-        try(ObjectInputStream locFile  = new ObjectInputStream(new BufferedInputStream(new FileInputStream("locations_rac.dat")))){
+        try{
+
+            ra = new RandomAccessFile("locations_rand.dat","rwd");
+            int numLocations = ra.readInt();
+            long locationStartPoint = ra.readInt();
+
+            while (ra.getFilePointer() < locationStartPoint){
+                int locationId = ra.readInt();
+                int locationStart = ra.readInt();
+                int locationLength = ra.readInt();
+
+                IndexRecord record = new IndexRecord(locationStart , locationLength);
+                index.put(locationId, record);
+            }
+
+        }catch (IOException e){
+            System.out.println("IOException in static initializer: "+e.getMessage());
+        }
+
+
+       /* try(ObjectInputStream locFile  = new ObjectInputStream(new BufferedInputStream(new FileInputStream("locations_rac.dat")))){
             boolean eof = false;
             try{
                 while (!eof){
@@ -301,8 +600,37 @@ public class Locations implements Map<Integer, Location> {
             System.out.println("IOException "+io.getMessage());
         }catch (ClassNotFoundException cnfe){
             System.out.println("ClassNotFoundException "+cnfe.getMessage());
-        }
+        }*/
         System.out.println("======================== static initialization block Loaded.. =================\n\n");
+    }
+
+    public Location getLocation(int locationId) throws IOException {
+        IndexRecord record = index.get(locationId);
+
+        ra.seek(record.getStartByte());
+
+        int id = ra.readInt();
+
+        String description = ra.readUTF();
+
+        String exits = ra.readUTF();
+
+        String[] exitParts = exits.split(",");
+
+        Location location = new Location(locationId,description, null);
+
+        if (locationId != 0){
+            for (int i = 0; i < exitParts.length; i++) {
+                System.out.println("exitPart = "+exitParts[i]);
+                System.out.println("exitPart[+1] = "+exitParts[i+1]);
+                String direction = exitParts[i];
+                int destination = Integer.parseInt(exitParts[++i]);
+                location.addExit(direction,destination);
+            }
+        }
+
+        return location;
+
     }
 
     @Override
@@ -363,5 +691,9 @@ public class Locations implements Map<Integer, Location> {
     @Override
     public Set<Entry<Integer, Location>> entrySet() {
         return locations.entrySet();
+    }
+
+    public void close() throws IOException {
+        ra.close();
     }
 }

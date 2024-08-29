@@ -2,6 +2,7 @@ package java_files_input_output._19_random_access_file;
 
 
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -14,7 +15,9 @@ import java.util.Scanner;
 public class Main {
     private static Locations locations = new Locations();
     private static Map<String, String> vocabulary = new HashMap<>();
-    public static void main(String[] args) {
+
+    private static int STARTING_LOCATION = 1;
+    public static void main(String[] args) throws IOException {
         Scanner scanner = new Scanner(System.in);
 
         // Add Vocabularies
@@ -24,16 +27,19 @@ public class Main {
         vocabulary.put("WEST","W");
         vocabulary.put("QUIT","Q");
 
-        int loc = 64;
+       // int loc = 64;
+
+        Location currentLocation = locations.getLocation(STARTING_LOCATION);
 
         while (true){
-            System.out.println(locations.get(loc).getDescription());
 
-            if (loc == 0)
+            System.out.println(currentLocation.getDescription());
+
+            if (currentLocation.getLocationId() == 0)
                 break;
 
             //Get available exists for location specified and print them
-            Map<String,Integer> possibleExits = locations.get(loc).getExits(); // get map of valid exits from the current location which is : Road
+            Map<String,Integer> possibleExits = currentLocation.getExits(); // get map of valid exits from the current location which is : Road
             System.out.print("Available exits are ");
             for (String exitRoute : possibleExits.keySet()){
                 System.out.print(exitRoute + ", ");
@@ -51,13 +57,13 @@ public class Main {
             }
 
             if (possibleExits.containsKey(direction)){
-                loc = possibleExits.get(direction); //possibleExits.get("N") ; Get the integer corresponding to the direction entered based on the key that has been typed in
+                currentLocation = locations.getLocation(currentLocation.getExits().get(direction)); //possibleExits.get("N") ; Get the integer corresponding to the direction entered based on the key that has been typed in
             }else{
                 System.out.println("You cannot go in that direction");
             }
         }
 
-
+        locations.close();
 
     }
 }

@@ -1,5 +1,24 @@
 package java_files_input_output._19_random_access_file;
 
+/*
+ * IndexRecord Class
+ *
+ * - Fields
+ *      int : startByte
+ *      int : length
+ *
+ * - Constructor
+ *      IndexRecord(int startByte, int length)
+ *
+ * - Getters
+ *      getStartByte() : int
+ *      getLength() : int
+ *
+ * - Setters
+ *      setStartByte(int startByte) : void
+ *      setLength(int length) : void
+ */
+
 public class IndexRecord {
     private int startByte;
     private int length;
