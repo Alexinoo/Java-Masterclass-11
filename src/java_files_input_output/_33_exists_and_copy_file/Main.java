@@ -37,7 +37,7 @@ import java.nio.file.Paths;
  *                      - file2.txt
  *                  - file1.txt
  *                  - file2.txt
- *                  - file3.txt
+ *                  - file3.dat
  *              - file1.txt
  *
  *      - Write code to copy "Examples\file1.txt" to the same folder "Examples\file1copy.txt"
