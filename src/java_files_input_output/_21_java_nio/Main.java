@@ -6,7 +6,57 @@ import java.util.Scanner;
 
 /*
  * Java NIO
- *  - Reading and writing to files
+ *
+ * Overview
+ * - In Java 1.4, a new I/O package was added to the Java SDK
+ * - They called it java.nio, the package was described as an improvement to Java I/O because the classes in java.io
+ *   perform I/O in a non-blocking manner
+ * - java.nio was also meant to fix some problems developers could run into when using the java.io classes when working
+ *   with the file system
+ *
+ * - java.nio classes fall into 1 of 2 buckets
+ *      - Those that deal with the file system
+ *      - Those that deal with reading and writing data
+ *
+ * - When using classes in the java.io package, a thread will block while it's waiting to read or write to a stream or
+ *   a buffer
+ * - However, threads using java.nio classes will not block, they are free to continue executing , so java.nio was
+ *   introduced as a performance improvement
+ *
+ * - However, many developers have argued that the java.nio package was a step backwards.
+ *      - Some have shown that blocking I/O is faster than non-blocking I/O
+ *
+ * - Also working with java.nio class is more complex
+ *      - As it has happened with other additions to the Java language, many developers still prefer to write code using
+ *        the older java.io classes and you may decide to do that too
+ *      - But it's important to also understand the new way of doing I/O, in case you're ever asked to work with code
+ *        that uses it
+ *
+ * - We've learnt that the java.io classes work with streams (characters and binary)
+ *      - Data is read 1 byte or character at a time and sometimes buffered, depending on which classes are used
+ *
+ * - When using java.nio, you'll deal with data in blocks, rather than processing one byte or character at a time, one
+ *   block will be processed at a time
+ *      - We use channels and buffers to accomplish this
+ *
+ * - Having said all that about java.nio , you can use java.nio methods to create a java.io stream
+ *
+ * ///////
+ * - We'll use the adventure game project that we last used to read and write the data as an ObjectStream i.e. Before
+ *   we looked into Random access
+ *
+ * - Let's start looking at the classes that read data from, and write data to a datasource
+ *
+ *
+ *
+ * /////////
+ * - The first thing we're going to do is to update the Locations class so that it reads data from directions_big.txt
+ *   and locations_big.txt files
+ * - We'll first run the Locations.main() class to write out the data and then we'll change the Locations class static
+ *    initializer which loads the data when the first instance of the Locations class is created
+ * - Once that is done, we can call main() from the Main class to run the game
+ *
+ * //// ----> Locations.class
  *
  */
 
