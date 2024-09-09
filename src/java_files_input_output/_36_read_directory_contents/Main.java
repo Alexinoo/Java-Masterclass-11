@@ -50,33 +50,41 @@ import java.nio.file.*;
  *
  *      - And if we run this sure enough, we get the contents of FileTree\Dir2 directory printed to the console
  *      - Which include Dir3 , file1.txt, file3.txt, file3.txt
+ *      - notice, that only the contents directly within the dir2 directory are within the stream
+ *           - in other words, the method only returns the first level of content also referred to as directories direct descendants
+ *
+ *      - It doesn't go into dir3 directory in this case and return it's files as well
+ *      - But we'll see how to walk an entire directory tree a little bit later on
  *
  *
- * //////// left here
- * - Also notice, that only the contents directly within the dir2 directory are within the stream
- *      - also referred to as directory direct descendants
  *
- * - It doesn't go into dir3 directory in this case and return it's files as well
- *      - we'll see how to walk an entire directory tree a little bit later on
- *
- * - When iterating over a directory stream, a DirectoryIteratorException may be thrown and it can be a good practice to catch that using the pipe
- *   character in conjunction with IOException
+ * ////////
+ * - When iterating over a directory stream, a DirectoryIteratorException may be thrown and it can be a good practice to explicitly catch that
+ *    and we can use a pipe character in conjunction with IOException
  *      - | is also known as Bitwise Inclusive OR
+ *
+ *      - It's just a nice way or a shorthand to avoid you having to create 2 separate statements
+ *
+ *
+ *
+ * ////////
  *
  * - Suppose we only wanted to list or work with specific types of files in a directory
  * - For example, let's say we only want .dat files
- *      - We could retrieve everything from the directory and then check each path name but there's actually a better way to do it
- *
+ * - We could retrieve everything from the directory and then check each path name but there's actually a better way to do it
  * - The newDirectoryStream() accepts a Filter as a second parameter
- *      - And only paths that much the filter will actually be included in the directory stream
- * - This second filtering parameter is known as a glob
- *      - A glob is a pattern similar to a regex but the syntax is more geared towards the type of things you'd want to do when working with paths
+ * - And only paths that much the filter will actually be included in the directory stream
+ * - This second filtering parameter is referred to as a glob
+ * - A glob is a pattern similar to a regex but the syntax is more geared towards the type of things you'd want to do when working with paths
+ *
+ *
+ * ////////
  *
  * Examples:
- *  - * character matches any string (can contain any number of characters)
- *  - *.dat will match any path with the .dat extension
- *  - *.{dat,txt} will match any path that has the extension .dat or .txt
- *  - ? matches exactly one character
+ * - * character matches any string (can contain any number of characters)
+ * - *.dat will match any path with the .dat extension
+ * - *.{dat,txt} will match any path that has the extension .dat or .txt
+ * - ? matches exactly one character
  *      - e.g. the glob ??? would match any path that contains exactly 3 characters
  *
  *  - myFile* matches any paths that begin with myFile
@@ -85,46 +93,76 @@ import java.nio.file.*;
  *      - the ? forces a second character, and the * matches 0 or more characters
  *
  * ///////
- * - Check FileSystem.getPathMatcher() for more patterns
- *      - If the glob syntax isn't sufficient for us to describe the paths you want to retrieve, we can pass the regex, and take advantage of the
- *        power that they offer
- *      - But majority of the time, the glob should be enough
+ * - Follow the link below
+ *      https://docs.oracle.com/javase/8/docs/api/java/nio/file/FileSystem.html#getPathMatcher-java.lang.String-
  *
- * ///
- * Suppose we wanted to retrieve files with .dat extension , we can pass "*.dat" as a second parameter to the Files.newDirectoryStream()
- *      - Refactor file3.dat to file3.dat for this to work and once we run this, we only get file3.dat as the only output
- *      - Because that's the only file that's meet our criteria of *.dat
+ * - and get more info regarding FileSystem.getPathMatcher() for more patterns
+ * - If the glob syntax isn't sufficient for us to describe the paths you want to retrieve, we can pass the regex, and take advantage of the
+ *   power that they offer
+ * - But most of the time, the glob should be enough
  *
  *
- * ////
- * - We can also use isDirectory() and isFile() when we retrieve the entire contents of a directory, to separate files from directories but there is
+ *
+ * //////
+ * - Suppose we wanted to retrieve files with .dat extension , we can pass "*.dat" as a second parameter to the Files.newDirectoryStream()
+ * - Rename file3.txt to file3.dat for this to work and once we run this, we only get file3.dat as the only output
+ * - Because that's the only file that's meet our criteria of *.dat
+ *
+ *       DirectoryStream<Path> contents_dat_files = Files.newDirectoryStream(directory, "*.dat");
+ *       printContents(contents_dat_files);
+ *
+ *       - If we run this now, we should only get files with .dat extensions only which is "file3.dat"
+ *       - And that's because that is the only file that meets our criteria
+ *
+ *
+ * /////////
+ * - When retrieving the entire contents of a directory, you can use isDirectory() and isFile() to separate files from directories but there is
  *   actually an easier way to do it
- * - But this time , a glob won't help that much because globs are used to match patterns against file names
- *      - operate on file attributes
+ * - However,  this time , a glob won't help that much because globs are used to match patterns against file names
+ * - In other words, they operate on file attributes
+ * - There's a 3rd version of Files.newDirectoryStream() that accept a DirectoryStream.Filter parameter :
  *
- * - There's a 3rd version of Files.newDirectoryStream() that accept a DirectoryStream.Filter parameter : :- DirectoryStream.Filter<? super Path> filter
- *    and this allows us to write our own filters
+ *       DirectoryStream.Filter<? super Path> filter
  *
- * ///
+ * - And this allows us to write our own filters
+ *
+ *
+ *
+ * /////////
  * - Let's look at an example of writing a filter that only returns files and not directories
  * - The DirectoryStream.Filter<? super Path> interface has got only 1 method called accept and that's the method we have to implement
- *      - When accept returns true for a path, the path will be included in the directory stream results
+ * - When accept returns true for a path, the path will be included in the directory stream results
  *
- * - The DirectoryStream.Filter interface has only 1 method called accept() and when it returns true for a path, the path is going to be included
- *    in the DirectoryStream results
- *      - we're testing to see if a particular Path is a regular file , and if that returns true. then that means it wil be shown in the
- *         contents_files_only list that we're going to iterate
- *      - And sure enough , we do get the following files
- *          - file1.txt
- *          - file2.txt
- *          - file3.dat
- *      - And basically, the filter has now eliminated the dir directory
+ * - We'll use a an anonymous class that returns a Predicate
  *
- * - And since DirectoryStream.Filter interface , is a @FunctionalInterface , we could also use a lambda expression as well
+ *         DirectoryStream.Filter<Path> filterFilesOnly = new DirectoryStream.Filter<Path>() {
+            @Override
+            public boolean accept(Path path) throws IOException {
+                return Files.isRegularFile(path);
+            }
  *
- *      DirectoryStream.Filter<Path> filterFilesOnly = (path) -> Files.isRegularFile(path);
+ *          - Test to see if a particular path is a regular file
+ *          - If that returns true, then that means it wil be shown in the contents_files_only list that we're going to iterate
  *
- *      - more concise but we do get exactly the same results
+ *  - Then what we can do now is to pass the filterFilesOnly predicate to Files.newDirectoryStream()
+ *
+ *          DirectoryStream<Path> contents_files_only = Files.newDirectoryStream(directory, filterFilesOnly)
+ *
+ *          - And sure enough , we do get the following files: file1.txt , file2.txt ,  file3.dat
+ *          - Note the Dir3, is omitted and won't be shown since it's not a regular file
+ *          - And basically, the filter has now eliminated the dir directory
+ *
+ *
+ *
+ * ////////////////
+ * - Another thing to keep in mind is that since DirectoryStream.Filter interface , has only got 1 method, or we can also say it's
+ *    a @FunctionalInterface , and can be used as a target for a lambda expression
+ *
+ * - To do an equivalent, to a lambda, we can do the following
+ *
+ *      DirectoryStream.Filter<Path> filterFilesOnly = path -> Files.isRegularFile(path);
+ *
+ * - And we should get the same results and this is more concise
  *
  *
  */
