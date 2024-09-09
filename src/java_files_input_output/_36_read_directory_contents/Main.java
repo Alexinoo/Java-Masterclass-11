@@ -6,30 +6,53 @@ import java.nio.file.*;
 /*
  * Read Existing Directory Contents
  *
- * - Directory contents includes the list of files it contains
+ * - We looked at how to create a directory, let us now look at how to read an existing directory
+ * - A directory contents includes the list of files that it contains
+ * - Create the same FileTree as per the instructor to get the same results and to make sure we're
+ *   on the same page
+ * - We have created a sub folder named FileTree which we're going to use for this example
  *
- * - We'll use FileTree directory for this example
+ * //////////////////////////////////////////////
+ * //// Files.newDirectoryStream(Path path) /////
  *
- * //////////////////////////////////////
- * //// Files.newDirectoryStream() /////
- *
- *  - We'll read the entries in the directory using Files.newDirectoryStream()
- *      - this method returns a stream which needs to be closed once finished and we'll need to use try-with-resources and catch IOException if we
- *         get one
+ * - We'll read the entries in the directory using Files.newDirectoryStream()
+ * - This method returns a stream which needs to be closed once finished and we'll need to use try-with-resources
+ *   and catch IOException if we get one
  *
  *
- * ///// Example
- *
+ * ////////////
  * - Let's read the contents of FileTree\Dir2 which contains
  *      - Dir3
  *      - file1.txt
  *      - file2.txt
  *      - file3.dat
  *
- * - And sure enough, we get the above from "DirectoryStream<Path> contents"
+ * - Let's create a Path obj to the directory : "FileTree\Dir2"
+ * - We use FileSystems.getDefault() to get the working directory - so we don't have to specify the absolute path
+ *
+ *      Path directory = FileSystems.getDefault().getPath("FileTree\\Dir2");
+ *      DirectoryStream<Path> contents_all = Files.newDirectoryStream(directory);
+ *
+ *
  *      - Files.newDirectoryStream(directory) returns a DirectoryStream<Path>
- *      - DirectoryStream is an interface that implements the Iterable interface
- *          and consequently what that means is that we can iterate over the return paths to get the contents of the dir2 folder
+ *      - DirectoryStream is an interface that implements the Iterable interface and consequently what that means is
+ *         that we can iterate over the return paths to get the contents of the dir2 folder
+ *
+ * - So, next let's put that iterable code in
+ * - Refactored to use printContents(DirectoryStream<Path> files)
+ *
+ *       private static void printContents(DirectoryStream<Path> files){
+                System.out.println("_".repeat(50));
+                for (Path file : files){
+                    System.out.println(file.getFileName());
+             }
+         }
+ *
+ *      - And if we run this sure enough, we get the contents of FileTree\Dir2 directory printed to the console
+ *      - Which include Dir3 , file1.txt, file3.txt, file3.txt
+ *
+ *
+ * //////// left here
  * - Also notice, that only the contents directly within the dir2 directory are within the stream
  *      - also referred to as directory direct descendants
  *
@@ -120,30 +143,25 @@ public class Main {
         /* Using a lambda */
         DirectoryStream.Filter<Path> filterFilesOnly = (path) -> Files.isRegularFile(path);
 
-        // We use FileSystems.getDefault() to get the working directory - so we don't have to specify the absolute path
         Path directory = FileSystems.getDefault().getPath("FileTree\\Dir2");
 
         try(DirectoryStream<Path> contents_all = Files.newDirectoryStream(directory);
             DirectoryStream<Path> contents_dat_files = Files.newDirectoryStream(directory, "*.dat");
             DirectoryStream<Path> contents_files_only = Files.newDirectoryStream(directory, filterFilesOnly)) {
 
-            for (Path file : contents_all){
-                System.out.println(file.getFileName());
-            }
-            System.out.println("_".repeat(50));
-
-            for (Path file : contents_dat_files){
-                System.out.println(file.getFileName());
-            }
-
-            System.out.println("_".repeat(50));
-
-            for (Path file : contents_files_only){
-                System.out.println(file.getFileName());
-            }
+            printContents(contents_all);
+            printContents(contents_dat_files);
+            printContents(contents_files_only);
 
         }catch (IOException | DirectoryIteratorException e){
             System.out.println(e.getMessage());
+        }
+    }
+
+    private static void printContents(DirectoryStream<Path> files){
+        System.out.println("_".repeat(50));
+        for (Path file : files){
+            System.out.println(file.getFileName());
         }
     }
 }
