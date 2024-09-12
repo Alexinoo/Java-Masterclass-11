@@ -119,8 +119,17 @@ public class Main {
          * Regex : ^4[0-9]{12}([0-9]{3})?$
          */
 
-        String visa1 ="4444444444444";
-        String visa2 ="544444444444";
+        String visa1 = "4444444444444";
+        String visa2 = "5444444444444";
+        String visa3 = "4444444444444444";
+        String visa4 = "44444444444444444";
+        String visa5 = "4444";
+
+        System.out.println("visa1 = "+visa1.matches("^4[0-9]{12}([0-9]{3})?$")); // should match
+        System.out.println("visa2 = "+visa2.matches("^4[0-9]{12}([0-9]{3})?$")); // shouldn't match
+        System.out.println("visa3 = "+visa3.matches("^4[0-9]{12}([0-9]{3})?$")); // should match
+        System.out.println("visa4 = "+visa4.matches("^4[0-9]{12}([0-9]{3})?$")); // shouldn't match
+        System.out.println("visa5 = "+visa5.matches("^4[0-9]{12}([0-9]{3})?$")); // shouldn't match
 
 
 
