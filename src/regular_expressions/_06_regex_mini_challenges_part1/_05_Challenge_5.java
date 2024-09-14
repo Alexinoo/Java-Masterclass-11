@@ -1,19 +1,37 @@
 package regular_expressions._06_regex_mini_challenges_part1;
 /*
  * Challenge #5
+ * ............
  *
  * - Write a regular expression that will match the following string in it's entirety
  *
+        String challenge5 = "aaabccccccccdddefffg";
+ *
  * - Use String.matches() to verify your answer
  *
+ * ///////////////
+ *  Solution : 1
+ * ///////////////
  *
- * Solution:
- *  - Option-1:
- *      - Use "[abcdefg]+"
- *          - we're matching strings that contain one or more of the letters a through g
+ *      String regExp = "[abcdefg]+";
+        System.out.println(challenge5.matches(regExp));
  *
- *  - Option-2
- *      - Use range also "[a-g]+"
+ *      - prints true
+ *      - we're matching strings that contain one or more of the letters a through g inclusive
+ *
+ * ///////////////
+ *  Solution : 2
+ * ///////////////
+ *
+ *      regExp = "[a-g]+";
+        System.out.println(challenge5.matches(regExp));
+ *
+ *      - prints true
+ *      - use a through g inclusive via range , implicitly, instead of hardcoding
+ *
+ * //// NOTE
+ * - Using the * quantifier would also work
+ *
  *
  */
 public class _05_Challenge_5 {
@@ -27,7 +45,6 @@ public class _05_Challenge_5 {
 
         regExp = "[a-g]+";
         System.out.println(challenge5.matches(regExp));
-
 
     }
 }
