@@ -217,15 +217,20 @@ import java.util.regex.Pattern;
             System.out.println("Occurrence: "+ h2TextMatcher.group(2));
         }
  *
-        - create another group pattern
+ *      - create another group pattern
  *      - defined 3 groups
  *      - Get the text between the h2 tags
-        - group(0) rep the entire htmlText
-        - group(1) rep (<h2>)
-        - group(2) rep (.+?)
-        - group(3) rep (</h2>)
-
-        - check the matcher documentation
+ *      - group(0) rep the entire htmlText
+ *      - group(1) rep (<h2>)
+ *      - group(2) rep (.+?) - outputs the text in between the <h2> and </h2> tags
+ *      - group(3) rep (</h2>)
+ *
+ * - You can actually also use matches to find ad replace parts of a String using replaceFirst and replaceAll methods
+ *
+ * - For more information about other methods in the Matcher class and what you can do with them check the matcher
+ *   documentation using the following link
+ *
+ *      https://docs.oracle.com/javase/8/docs/api/java/util/regex/Matcher.html
 */
 
 public class Main {
@@ -267,12 +272,6 @@ public class Main {
         /*
          * Get the text between the h2 tags
          * - create another group pattern
-         * - group(0) rep the entire htmlText
-         * - group(1) rep (<h2>)
-         * - group(2) rep (.+?)
-         * - group(3) rep (</h2>)
-         *
-         * - check the matcher documentation
          */
 
         String h2TextGroups = "(<h2>)(.+?)(</h2>)";
