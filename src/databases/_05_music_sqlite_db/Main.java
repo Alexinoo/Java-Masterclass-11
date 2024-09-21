@@ -50,6 +50,9 @@ public class Main {
             System.out.println("Artist Name = "+songByArtist.getArtistName() + ", Album Name = "+ songByArtist.getAlbumName()+
                     ", Track no = "+songByArtist.getTrack());
         }
+
+        System.out.println("_".repeat(50));
+        datasource.querySongsMetadata();
         datasource.close();
     }
 }

@@ -125,8 +125,8 @@ public class Datasource {
         }
     }
 
-//    SELECT albums.name FROM albums INNER JOIN artists ON albums.artist = artists._id
-//    WHERE artists.name = "Carole King" ORDER BY albums.name COLLATE NOCASE ASC;
+/* SELECT albums.name FROM albums INNER JOIN artists ON albums.artist = artists._id
+   WHERE artists.name = "Carole King" ORDER BY albums.name COLLATE NOCASE ASC; */
     public List<String> queryAlbumsForArtist(String artistName , int sortOrder){
 
         /*StringBuilder sb = new StringBuilder("SELECT ");
@@ -188,6 +188,14 @@ public class Datasource {
 
     }
 
+    /*
+        SELECT artists.name , albums.name, songs.track FROM songs
+        INNER JOIN albums ON songs.album = albums._id
+        INNER JOIN artists ON albums.artist = artists._id
+        WHERE songs.title = "Go Your Own Way"
+        ORDER BY artists.name , albums.name COLLATE NOCASE ASC;
+
+     */
     public List<SongArtist> queryArtistsForSong(String songName , int sortOrder){
 
         StringBuilder sb = new StringBuilder(QUERY_ARTISTS_FOR_SONG_START);
@@ -219,6 +227,27 @@ public class Datasource {
             return null;
         }
 
+    }
+
+    /*
+     * Query Songs table metadata
+     * - Using ResultSetMetaData meta - we can get info such as column names and types and their attributes
+     * - Whether they are nullable etc
+     */
+    public void querySongsMetadata(){
+        String sql = "SELECT * FROM "+ TABLE_SONGS;
+
+        try(Statement statement = conn.createStatement();
+        ResultSet results = statement.executeQuery(sql)){
+
+            ResultSetMetaData meta = results.getMetaData();
+            int numOfColumns = meta.getColumnCount();
+            for (int i = 1; i < numOfColumns; i++) {
+               System.out.format("Column %d in the songs table is named %s\n", i , meta.getColumnName(i));
+            }
+        }catch (SQLException exc){
+            System.out.println("Query failed: "+exc.getMessage());
+        }
     }
 
     // Query Artist table - try-catch-finally
