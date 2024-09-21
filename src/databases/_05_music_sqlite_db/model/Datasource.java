@@ -1,8 +1,8 @@
 package databases._05_music_sqlite_db.model;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Datasource {
     public static final String DB_NAME = "music.db";
@@ -46,4 +46,59 @@ public class Datasource {
             System.out.println("Couldn't close connection "+exc.getMessage());
         }
     }
+
+    // Query artists table - try-with-resources
+    public List<Artist> queryArtist(){
+        try(Statement statement = conn.createStatement();
+            ResultSet results = statement.executeQuery("SELECT * FROM "+TABLE_ARTISTS)) {
+
+            List<Artist> artists = new ArrayList<>();
+            while (results.next()){
+                Artist artist = new Artist();
+                artist.setId(results.getInt(COLUMN_ARTIST_ID));
+                artist.setName(results.getString(COLUMN_ARTIST_NAME));
+                artists.add(artist);
+            }
+            return artists;
+        }catch (SQLException exc){
+            System.out.println("Query failed: "+exc.getMessage());
+            return null;
+        }
+    }
+
+    // Query Artist table - try-catch-finally
+   /* public List<Artist> queryArtist(){
+        Statement statement = null;
+        ResultSet results = null;
+        try {
+            statement = conn.createStatement();
+
+            results = statement.executeQuery("SELECT * FROM "+TABLE_ARTISTS);
+
+            List<Artist> artists = new ArrayList<>();
+            while (results.next()){
+                Artist artist = new Artist();
+                artist.setId(results.getInt(COLUMN_ARTIST_ID));
+                artist.setName(results.getString(COLUMN_ARTIST_NAME));
+                artists.add(artist);
+            }
+            return artists;
+        }catch (SQLException exc){
+            System.out.println("Query failed: "+exc.getMessage());
+            return null;
+        }finally {
+            try{
+                if (results != null)
+                    results.close();
+            }catch (SQLException exc){
+                System.out.println("Error closing result set: "+exc.getMessage());
+            }
+            try{
+                if (statement != null)
+                    statement.close();
+            }catch (SQLException exc){
+                System.out.println("Error closing statement: "+exc.getMessage());
+            }
+        }
+    } */
 }
