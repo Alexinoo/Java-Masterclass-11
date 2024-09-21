@@ -82,12 +82,11 @@ public class Datasource {
      INNER JOIN artists ON albums.artist = artists._id
      WHERE songs.title = "Go Your Own Way"
      ORDER BY artists.name , albums.name , songs.track;
-
      */
     public static final String CREATE_ARTIST_FOR_SONG_VIEW =
             "CREATE VIEW IF NOT EXISTS "+ TABLE_ARTIST_SONG_VIEW +" AS SELECT "+
                     TABLE_ARTISTS +"."+ COLUMN_ARTIST_NAME + ", "+
-                    TABLE_ALBUMS +"."+ COLUMN_ALBUM_NAME+ ", "+
+                    TABLE_ALBUMS +"."+ COLUMN_ALBUM_NAME+ " AS album, "+
                     TABLE_SONGS +"."+ COLUMN_SONG_TRACK + ", "+
                     TABLE_SONGS + "."+ COLUMN_SONG_TITLE+
             " FROM "+ TABLE_SONGS +
@@ -97,6 +96,13 @@ public class Datasource {
                     TABLE_ALBUMS +"."+ COLUMN_ALBUM_ARTIST +" = "+ TABLE_ARTISTS +"."+COLUMN_ARTIST_ID +
             " ORDER BY "+ TABLE_ARTISTS +"."+ COLUMN_ARTIST_NAME + ", "+ TABLE_ALBUMS +"."+ COLUMN_ALBUM_NAME+
             ", "+ TABLE_SONGS +"."+ COLUMN_SONG_TRACK;
+
+    // Query artist_list VIEW
+    //SELECT name , album , track, title FROM artist_list WHERE title = 'Go Your Own Way';
+    public static final String QUERY_VIEW_SONG_INFO =
+            "SELECT "+ COLUMN_ARTIST_NAME +" ,"+ COLUMN_SONG_ALBUM +", "+
+                        COLUMN_SONG_TRACK +" FROM "+ TABLE_ARTIST_SONG_VIEW +
+            " WHERE "+ COLUMN_SONG_TITLE  +"=\"";
 
     // Initialize connection obj
     private Connection conn;
@@ -319,6 +325,36 @@ public class Datasource {
             System.out.println("Create View failed: "+exc.getMessage());
         }
         return false;
+    }
+
+    /*
+     * Query artist_list VIEW
+     * SELECT name , album , track, title FROM artist_list WHERE title = 'Go Your Own Way';
+     * QUERY_VIEW_SONG_INFO
+     */
+
+    public List<SongArtist> querySongInfoView(String title){
+        StringBuilder sb = new StringBuilder(QUERY_VIEW_SONG_INFO);
+        sb.append(title);
+        sb.append("\"");
+
+        try(Statement statement = conn.createStatement();
+        ResultSet resultSet = statement.executeQuery(sb.toString())){
+
+            List<SongArtist> songArtistsList = new ArrayList<>();
+            while (resultSet.next()){
+                SongArtist songArtist = new SongArtist();
+                songArtist.setArtistName(resultSet.getString(1));
+                songArtist.setAlbumName(resultSet.getString(2));
+                songArtist.setTrack(resultSet.getInt(3));
+                songArtistsList.add(songArtist);
+            }
+            return songArtistsList;
+
+        }catch (SQLException exc){
+            System.out.println("Querying View Failed "+exc.getMessage());
+            return null;
+        }
     }
 
 

@@ -65,6 +65,18 @@ public class Main {
         if (datasource.createViewForSongArtists()){
             System.out.println("artist_list View Created..");
         }
+
+        /* Query VIEW - artist_list */
+        System.out.println("_".repeat(50));
+        List<SongArtist> songsForArtistViewList = datasource.querySongInfoView("She's On Fire");
+        if (songsForArtistViewList.isEmpty()){
+            System.out.println("Couldn't find the artist for the song specified");
+            return;
+        }
+        for (SongArtist songForArtist: songsForArtistViewList) {
+            System.out.println("FROM VIEW - Artist = "+songForArtist.getArtistName() +" ,Album = "+ songForArtist.getAlbumName()
+            + " ,Track = "+songForArtist.getTrack());
+        }
         datasource.close();
     }
 }
