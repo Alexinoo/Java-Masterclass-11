@@ -72,6 +72,32 @@ public class Datasource {
             " ORDER BY "+ TABLE_ARTISTS +"."+ COLUMN_ARTIST_NAME + ", "+
                     TABLE_ALBUMS+ "."+ COLUMN_ALBUM_NAME +" COLLATE NOCASE ";
 
+    // Create artist_list view
+    public static final String TABLE_ARTIST_SONG_VIEW = "artist_list";
+
+    /*
+     CREATE VIEW IF NOT EXISTS artist_list AS
+     SELECT artists.name , albums.name AS album, songs.track, songs.title FROM songs
+     INNER JOIN albums ON songs.album = albums._id
+     INNER JOIN artists ON albums.artist = artists._id
+     WHERE songs.title = "Go Your Own Way"
+     ORDER BY artists.name , albums.name , songs.track;
+
+     */
+    public static final String CREATE_ARTIST_FOR_SONG_VIEW =
+            "CREATE VIEW IF NOT EXISTS "+ TABLE_ARTIST_SONG_VIEW +" AS SELECT "+
+                    TABLE_ARTISTS +"."+ COLUMN_ARTIST_NAME + ", "+
+                    TABLE_ALBUMS +"."+ COLUMN_ALBUM_NAME+ ", "+
+                    TABLE_SONGS +"."+ COLUMN_SONG_TRACK + ", "+
+                    TABLE_SONGS + "."+ COLUMN_SONG_TITLE+
+            " FROM "+ TABLE_SONGS +
+            " INNER JOIN "+ TABLE_ALBUMS + " ON "+
+                    TABLE_SONGS +"."+ COLUMN_SONG_ALBUM +" = "+ TABLE_ALBUMS +"."+COLUMN_ALBUM_ID +
+            " INNER JOIN "+ TABLE_ARTISTS + " ON "+
+                    TABLE_ALBUMS +"."+ COLUMN_ALBUM_ARTIST +" = "+ TABLE_ARTISTS +"."+COLUMN_ARTIST_ID +
+            " ORDER BY "+ TABLE_ARTISTS +"."+ COLUMN_ARTIST_NAME + ", "+ TABLE_ALBUMS +"."+ COLUMN_ALBUM_NAME+
+            ", "+ TABLE_SONGS +"."+ COLUMN_SONG_TRACK;
+
     // Initialize connection obj
     private Connection conn;
 
@@ -280,6 +306,21 @@ public class Datasource {
         return -1;
 
     }
+
+    /*
+     * Create artist_list VIEW
+     */
+    public boolean createViewForSongArtists(){
+        try(Statement statement = conn.createStatement()){
+
+            statement.execute(CREATE_ARTIST_FOR_SONG_VIEW);
+            return true;
+        }catch (SQLException exc){
+            System.out.println("Create View failed: "+exc.getMessage());
+        }
+        return false;
+    }
+
 
     // Query Artist table - try-catch-finally
    /* public List<Artist> queryArtist(){

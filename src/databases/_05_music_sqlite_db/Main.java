@@ -59,6 +59,12 @@ public class Main {
         System.out.println("_".repeat(50));
         int count = datasource.getCount(Datasource.TABLE_SONGS);
         System.out.println("Number of songs is: "+count);
+
+        /* Create VIEW - artist_list */
+        System.out.println("_".repeat(50));
+        if (datasource.createViewForSongArtists()){
+            System.out.println("artist_list View Created..");
+        }
         datasource.close();
     }
 }
