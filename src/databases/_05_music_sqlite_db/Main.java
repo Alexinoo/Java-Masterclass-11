@@ -51,8 +51,14 @@ public class Main {
                     ", Track no = "+songByArtist.getTrack());
         }
 
+        /* Get songs table metadata */
         System.out.println("_".repeat(50));
         datasource.querySongsMetadata();
+
+        /* COUNT(*) FUNCTIONS - count number of songs in specified tables */
+        System.out.println("_".repeat(50));
+        int count = datasource.getCount(Datasource.TABLE_SONGS);
+        System.out.println("Number of songs is: "+count);
         datasource.close();
     }
 }

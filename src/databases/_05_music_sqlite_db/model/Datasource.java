@@ -250,6 +250,37 @@ public class Datasource {
         }
     }
 
+    /*
+     * count() - How to get a value from a function
+     * - call getInt(columnIndex) and pass column index
+     * - We treat the function result as a column
+     * - Since we're only asking for the count, the result will be at column 1
+     */
+    public int getCount(String table){
+        String sql = "SELECT COUNT(*), MIN(_id) FROM "+ table;
+        // Using aliases
+        //String sql = "SELECT COUNT(*) AS count, MIN(_id) AS min_id FROM "+ table;
+        try(Statement statement = conn.createStatement();
+        ResultSet results = statement.executeQuery(sql)){
+
+            /* Using column index */
+            int count = results.getInt(1);
+            int min = results.getInt(2);
+
+            /* Alternatively we can use aliases
+            int count = results.getInt("count");
+            int min = results.getInt("min_id");*/
+
+
+            System.out.printf("Count = %d , Min = %s\n",count , min);
+            return count;
+        }catch (SQLException exc){
+            System.out.println("Query failed: "+exc.getMessage());
+        }
+        return -1;
+
+    }
+
     // Query Artist table - try-catch-finally
    /* public List<Artist> queryArtist(){
         Statement statement = null;
