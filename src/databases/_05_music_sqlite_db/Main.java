@@ -2,6 +2,8 @@ package databases._05_music_sqlite_db;
 
 import databases._05_music_sqlite_db.model.Artist;
 import databases._05_music_sqlite_db.model.Datasource;
+import databases._05_music_sqlite_db.model.Song;
+import databases._05_music_sqlite_db.model.SongArtist;
 
 import java.util.List;
 
@@ -28,11 +30,26 @@ public class Main {
         System.out.println("_".repeat(50));
 
         List<String> albums = datasource.queryAlbumsForArtist("Iron Maiden",Datasource.ORDER_BY_ASC);
+        //albums = datasource.queryAlbumsForArtist("Pink Floyd",Datasource.ORDER_BY_DESC);
+        //albums = datasource.queryAlbumsForArtist("Carole King",Datasource.ORDER_BY_NONE);
+
         if (albums == null) {
             System.out.println("No albums!");
             return;
         }
         albums.forEach(System.out::println);
+
+        System.out.println("_".repeat(50));
+
+        List<SongArtist> songsByArtist = datasource.queryArtistsForSong("Go Your Own Way",Datasource.ORDER_BY_ASC);
+        if (songsByArtist.isEmpty()) {
+            System.out.println("Could not find the artist for the song!");
+            return;
+        }
+        for (SongArtist songByArtist : songsByArtist) {
+            System.out.println("Artist Name = "+songByArtist.getArtistName() + ", Album Name = "+ songByArtist.getAlbumName()+
+                    ", Track no = "+songByArtist.getTrack());
+        }
         datasource.close();
     }
 }
