@@ -46,6 +46,17 @@ public class Datasource {
     public static final int ORDER_BY_ASC = 2;
     public static final int ORDER_BY_DESC = 3;
 
+    //Query albums by Artist Constant
+    public static final String QUERY_ALBUMS_BY_ARTIST_START =
+            "SELECT "+ TABLE_ALBUMS + "."+ COLUMN_ALBUM_NAME +" FROM "+ TABLE_ALBUMS +
+                    " INNER JOIN "+ TABLE_ARTISTS +" ON "+ TABLE_ALBUMS +"."+ COLUMN_ALBUM_ARTIST +
+                    " = "+ TABLE_ARTISTS +"."+COLUMN_ARTIST_ID+
+                    " WHERE "+ TABLE_ARTISTS +"."+ COLUMN_ARTIST_NAME + " = \"";
+
+    // Order by Constant
+    public static final String QUERY_ALBUMS_BY_ARTIST_SORT =
+            " ORDER BY "+ TABLE_ALBUMS +"."+ COLUMN_ALBUM_NAME +" COLLATE NOCASE ";
+
     // Initialize connection obj
     private Connection conn;
 
@@ -97,6 +108,69 @@ public class Datasource {
             System.out.println("Query failed: "+exc.getMessage());
             return null;
         }
+    }
+
+//    SELECT albums.name FROM albums INNER JOIN artists ON albums.artist = artists._id
+//    WHERE artists.name = "Carole King" ORDER BY albums.name COLLATE NOCASE ASC;
+    public List<String> queryAlbumsForArtist(String artistName , int sortOrder){
+
+        /*StringBuilder sb = new StringBuilder("SELECT ");
+        sb.append(TABLE_ALBUMS);
+        sb.append('.');
+        sb.append(COLUMN_ALBUM_NAME);
+        sb.append(" FROM ");
+        sb.append(TABLE_ALBUMS);
+        sb.append(" INNER JOIN ");
+        sb.append(TABLE_ARTISTS);
+        sb.append(" ON ");
+        sb.append(TABLE_ALBUMS);
+        sb.append('.');
+        sb.append(COLUMN_ALBUM_ARTIST);
+        sb.append(" = ");
+        sb.append(TABLE_ARTISTS);
+        sb.append('.');
+        sb.append(COLUMN_ARTIST_ID);
+        sb.append(" WHERE ");
+        sb.append(TABLE_ARTISTS);
+        sb.append('.');
+        sb.append(COLUMN_ARTIST_NAME);
+        sb.append(" = \"");
+        sb.append(artistName);
+        sb.append("\""); */
+
+        StringBuilder sb = new StringBuilder(QUERY_ALBUMS_BY_ARTIST_START);
+        sb.append(artistName);
+        sb.append("\"");
+
+        if (sortOrder != ORDER_BY_NONE){
+            /*sb.append(" ORDER BY ");
+            sb.append(TABLE_ALBUMS);
+            sb.append('.');
+            sb.append(COLUMN_ALBUM_NAME);
+            sb.append(" COLLATE NOCASE "); */
+            //Replace with ORDER BY Constant
+            sb.append(QUERY_ALBUMS_BY_ARTIST_SORT);
+            if (sortOrder == ORDER_BY_DESC)
+                sb.append("DESC");
+            else
+                sb.append("ASC");
+        }
+        System.out.println(sb.toString());
+
+        try(Statement statement = conn.createStatement();
+        ResultSet resultSet = statement.executeQuery(sb.toString())){
+
+            List<String> albums = new ArrayList<>();
+            while (resultSet.next()){
+                albums.add(resultSet.getString(1));
+            }
+            return albums;
+
+        }catch (SQLException exc){
+            System.out.println("Error retrieving albums");
+            return null;
+        }
+
     }
 
     // Query Artist table - try-catch-finally
