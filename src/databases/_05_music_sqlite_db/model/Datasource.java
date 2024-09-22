@@ -120,6 +120,54 @@ public class Datasource {
                     " WHERE "+ COLUMN_SONG_TITLE  +"= ?";
 
     /*
+     * DB Transactions
+     * Add the following INSERT CONSTANTS
+     *  - Insert into artists
+     *  - Insert into albums
+     *  - Insert into songs
+     *
+     * Add PreparedStatement instance variables for the INSERT statements
+     *
+     * Add code to the open() to create the prepared statement instances for the INSERT CONSTANTS
+     *  - Return generated keys after for the artists and albums table
+     *
+     * Close them prepared statements (INSERTS) in the close()
+     */
+
+    public static final String INSERT_ARTIST = "INSERT INTO "+ TABLE_ARTISTS +
+            "("+ COLUMN_ARTIST_NAME +") VALUES(?)";
+
+    public static final String INSERT_ALBUMS = "INSERT INTO "+ TABLE_ALBUMS +
+            "("+ COLUMN_ALBUM_NAME + ", "+ COLUMN_ALBUM_ARTIST +") VALUES(?,?)";
+
+    public static final String INSERT_SONGS = "INSERT INTO "+ TABLE_SONGS +
+            "("+ COLUMN_SONG_TRACK + ", "+ COLUMN_SONG_TITLE + ", "+ COLUMN_SONG_ALBUM +") VALUES(?,?,?)";
+
+    /*
+     * BEFORE adding an artist into artists table
+     *  - Query to see if the artist already exists
+     *  - search by artist name and return the id for that artist if found
+     *  - If it doesn't exist, we'll return the new id after the insert
+     *
+     * BEFORE adding an album into albums table
+     *  - Query to see if the album already exists
+     *  - search by album name and return the id for that album if found
+     *  - If it doesn't exist, we'll return the new id after the insert
+     *
+     * BEFORE adding a song into songs table
+     *  - Query to see if the song already exists
+     *  - search by song's name and return the id for that song if found
+     *  - If it doesn't exist, we'll return the new id after the insert
+     */
+
+    public static final String QUERY_ARTIST = "SELECT "+ COLUMN_ARTIST_ID +" FROM "+ TABLE_ARTISTS +
+            " WHERE "+ COLUMN_ARTIST_NAME +" = ?";
+
+    public static final String QUERY_ALBUM = "SELECT "+ COLUMN_ALBUM_ID +" FROM "+ TABLE_ALBUMS +
+            " WHERE "+ COLUMN_ALBUM_NAME +" = ?";
+
+
+    /*
      * Declare an instance variable for the PreparedStatement, because we only want to create it once
      * We don't want to create it everytime we query, because we only want it to be pre-compiled once
      * If we were to create a new instance every time we did a query, we'd lose the performance benefit
@@ -133,15 +181,34 @@ public class Datasource {
      * - Update the query() to use a PreparedStatement
      */
 
-    private PreparedStatement querySongInfoView;
 
     // Initialize connection obj
     private Connection conn;
+    private PreparedStatement querySongInfoView;
 
+    //Add PreparedStatements instances for the 3 INSERTS
+    private PreparedStatement insertIntoArtists;
+    private PreparedStatement insertIntoAlbums;
+    private PreparedStatement insertIntoSongs;
+
+    //Add PreparedStatements instances for the 2 QUERIES
+    private PreparedStatement queryArtist;
+    private PreparedStatement queryAlbum;
+
+    //Initialize the PreparedStatements instances for the 3 INSERTS in the open()
+    //Initialize the PreparedStatements instances for the 2 QUERIES in the open()
     public boolean open(){
         try{
             conn = DriverManager.getConnection(CONNECTION_STRING);
             querySongInfoView = conn.prepareStatement(QUERY_VIEW_SONG_INFO_PREP);
+
+            insertIntoArtists = conn.prepareStatement(INSERT_ARTIST,Statement.RETURN_GENERATED_KEYS);
+            insertIntoAlbums = conn.prepareStatement(INSERT_ALBUMS,Statement.RETURN_GENERATED_KEYS);
+            insertIntoSongs = conn.prepareStatement(INSERT_SONGS);
+
+            queryArtist = conn.prepareStatement(QUERY_ARTIST);
+            queryAlbum = conn.prepareStatement(QUERY_ALBUM);
+
             return true;
         }catch (SQLException exc){
             System.out.println("Couldn't connect to database : "+exc.getMessage());
@@ -161,6 +228,21 @@ public class Datasource {
         try{
             if (querySongInfoView != null)
                 querySongInfoView.close();
+
+            if (insertIntoArtists != null)
+                insertIntoArtists.close();
+
+            if (insertIntoAlbums != null)
+                insertIntoAlbums.close();
+
+            if (insertIntoSongs != null)
+                insertIntoSongs.close();
+
+            if (queryArtist != null)
+                queryArtist.close();
+
+            if (queryAlbum != null)
+                queryAlbum.close();
 
             if (conn != null)
                 conn.close();
