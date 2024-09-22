@@ -126,9 +126,61 @@ public class Main {
          * Add another song : Like a Rolling Stone, Bob Dylan , Bob Dylan's Greatest Hits , Track no 5
          *
          *
+         * //// TESTING ////
+         * - Simulate an Error
+         *      - insertIntoSongs.setInt(7,albumId);
+         *      - we know the last index should be 3, for the placeholder is supposed to be 3
+         * - Insert a song : Bird Dog
+         *      - by: Everly Brothers,
+         *      - album: All-Time Greatest Hits
+         *      - track no : 7
+         *
+         * //// RESULTS /////
+         * - We got an ArrayIndexOutOfBoundsException error, which means that under the hood, the JDBC API, uses zero-based
+         *  index, and works with some sort of an array-like structure
+         *
+         * - However, both the artist and the albums were added, but the question is WHY ?
+         * - Didn't we have some code in there to do rollback ?
+         *
+         * //// EXPLANATION ////
+         * - SQLException wasn't thrown, but rather the ArrayIndexOutOfBoundsException was thrown
+         * - Therefore , the catch block was bypassed and rollback wasn't executed
+         * - The finally block was executed which had the side effect of committing the changes and that's why the
+         *   artist and the album were both saved
+         *
+         * ////  SOLUTION /////
+         * - So, how do we actually get around this ?
+         * - What we should do here is that instead of catching a SQLException, we should really catch all exceptions
+         * - So let's change the SQLException to Exception and that will catch array index out of bounds exception or
+         *   a SQLException , or any other Exception for that matter and we should get a rollback
+         *
+         * // TESTING ///
+         * - Delete both entries from artists and albums table :-
+         *      - artist : Everly Brothers
+         *      - album : All-Time Greatest Hits
+         * - Rerun again and check whether we get the proper behaviour that we're looking for which is a proper
+         *   rollback
+         *
+         * ///// RESULTS ///
+         * - This time, we get the correct behavior
+         *      - Insert Song Exception
+         *      - We get Performing Rollback
+         *      - And Resetting commit behavior
+         * - We'll still doing auto-commit to true, but the rollback() was called prior to that, and we should find
+         *   that changes weren't added to the database this time
+         *
+         * - And this time the artist, album or the song were neither added
+         *
+         *
+         * ///// FIX THE ERROR ////
+         * - Re-run to make sure things are still working as they should
+         * - Change the index back from 7 to 3
          */
+
+
        // datasource.insertSong("Touch of Grey","Grateful Dead","In The Dark",1);
-        datasource.insertSong("Like a Rolling Stone","Bob Dylan","Bob Dylan's Greatest Hits",5);
+       // datasource.insertSong("Like a Rolling Stone","Bob Dylan","Bob Dylan's Greatest Hits",5);
+        datasource.insertSong("Bird Dog","Everly Brothers","All-Time Greatest Hits",7);
 
         /*
          * Close the connection
