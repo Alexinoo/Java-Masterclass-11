@@ -166,6 +166,9 @@ public class Datasource {
     public static final String QUERY_ALBUM = "SELECT "+ COLUMN_ALBUM_ID +" FROM "+ TABLE_ALBUMS +
             " WHERE "+ COLUMN_ALBUM_NAME +" = ?";
 
+    public static final String QUERY_SONG = "SELECT "+ COLUMN_SONG_ID +" FROM "+ TABLE_SONGS +
+            " WHERE "+ COLUMN_SONG_TITLE +" = ?";
+
 
     /*
      * Declare an instance variable for the PreparedStatement, because we only want to create it once
@@ -191,12 +194,13 @@ public class Datasource {
     private PreparedStatement insertIntoAlbums;
     private PreparedStatement insertIntoSongs;
 
-    //Add PreparedStatements instances for the 2 QUERIES
+    //Add PreparedStatements instances for the 3 QUERIES
     private PreparedStatement queryArtist;
     private PreparedStatement queryAlbum;
+    private PreparedStatement querySong;
 
     //Initialize the PreparedStatements instances for the 3 INSERTS in the open()
-    //Initialize the PreparedStatements instances for the 2 QUERIES in the open()
+    //Initialize the PreparedStatements instances for the 3 QUERIES in the open()
     public boolean open(){
         try{
             conn = DriverManager.getConnection(CONNECTION_STRING);
@@ -208,6 +212,7 @@ public class Datasource {
 
             queryArtist = conn.prepareStatement(QUERY_ARTIST);
             queryAlbum = conn.prepareStatement(QUERY_ALBUM);
+            querySong = conn.prepareStatement(QUERY_SONG);
 
             return true;
         }catch (SQLException exc){
@@ -243,6 +248,9 @@ public class Datasource {
 
             if (queryAlbum != null)
                 queryAlbum.close();
+
+            if (querySong != null)
+                querySong.close();
 
             if (conn != null)
                 conn.close();
@@ -619,8 +627,11 @@ public class Datasource {
     }
 
     /*
-     * insertSong(title,artist,album,track) : void
-     *  - copy insertAlbum(name,artistId) and change some values
+     * public insertSong(title,artist,album,track) : void
+     *
+     * Check if the song already exist
+     *  - don't do any processing, return
+     *
      *
      * call insertArtist(artist) - to get the artistId
      *  - returns artist for existing/newly inserted, otherwise handle SQLException from here
@@ -629,8 +640,16 @@ public class Datasource {
      *  - returns album id for existing/newly inserted or handle SQLException from here
      */
 
-    private void insertSong(String title, String artist , String album ,int track){
+    public void insertSong(String title, String artist , String album ,int track){
         try{
+            querySong.setString(1, title);
+            ResultSet resultSet = querySong.executeQuery();
+            // if a record was found - means album already exists - we don't need to do anything
+            // proceed with the insert in the else statement
+            if (resultSet.next()) {
+                System.out.println("Song Already Exists, Duplicate not allowed!");
+                return;
+            }
             /*
              * start the transaction by turning off the auto-commit behaviour of the conn obj
              * default behavior is to commit every change, and the DB does that by running every update,delete and

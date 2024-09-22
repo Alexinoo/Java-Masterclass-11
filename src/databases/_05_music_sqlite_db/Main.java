@@ -113,6 +113,26 @@ public class Main {
             System.out.println("FROM VIEW - Artist = "+songForArtist.getArtistName() +" ,Album = "+ songForArtist.getAlbumName()
                     + " ,Track = "+songForArtist.getTrack());
         }
+
+        /*
+         * Insert a Song
+         *  - Touch of Grey by Grateful Dead, In The Dark album , Track no. 1
+         * Note ,
+         *  - we have 201 artists
+         *  - we have 439 albums
+         *  - we have 5350 songs
+         * Song inserted
+         *
+         * Add another song : Like a Rolling Stone, Bob Dylan , Bob Dylan's Greatest Hits , Track no 5
+         *
+         *
+         */
+       // datasource.insertSong("Touch of Grey","Grateful Dead","In The Dark",1);
+        datasource.insertSong("Like a Rolling Stone","Bob Dylan","Bob Dylan's Greatest Hits",5);
+
+        /*
+         * Close the connection
+         */
         datasource.close();
     }
 }
