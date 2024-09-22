@@ -2,10 +2,10 @@ package databases._05_music_sqlite_db;
 
 import databases._05_music_sqlite_db.model.Artist;
 import databases._05_music_sqlite_db.model.Datasource;
-import databases._05_music_sqlite_db.model.Song;
 import databases._05_music_sqlite_db.model.SongArtist;
 
 import java.util.List;
+import java.util.Scanner;
 
 public class Main {
 
@@ -75,7 +75,43 @@ public class Main {
         }
         for (SongArtist songForArtist: songsForArtistViewList) {
             System.out.println("FROM VIEW - Artist = "+songForArtist.getArtistName() +" ,Album = "+ songForArtist.getAlbumName()
-            + " ,Track = "+songForArtist.getTrack());
+                    + " ,Track = "+songForArtist.getTrack());
+        }
+
+        /*
+         * SQL Injections
+         * - Getting input from the user using a Scanner class - instead of hard-coding as we did above
+         *
+         * - Type : Go Your Own Way" or 1=1 or" to perform an SQL Injection
+
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter a song title: ");
+        String title = scanner.nextLine();
+        List<SongArtist> songsForArtistViewListPrepStatement = datasource.querySongInfoView(title);
+        if (songsForArtistViewList.isEmpty()){
+            System.out.println("Couldn't find the artist for the song specified");
+            return;
+        }
+        for (SongArtist songForArtist: songsForArtistViewList) {
+            System.out.println("FROM VIEW - Artist = "+songForArtist.getArtistName() +" ,Album = "+ songForArtist.getAlbumName()
+                    + " ,Track = "+songForArtist.getTrack());
+        } */
+
+
+        /*
+         * Using PreparedStatement
+         */
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter a song title: ");
+        String title = scanner.nextLine();
+        List<SongArtist> songsForArtistViewListPrepStatement = datasource.querySongInfoViewPrepStatement(title);
+        if (songsForArtistViewListPrepStatement.isEmpty()){
+            System.out.println("Couldn't find the artist for the song specified");
+            return;
+        }
+        for (SongArtist songForArtist: songsForArtistViewListPrepStatement) {
+            System.out.println("FROM VIEW - Artist = "+songForArtist.getArtistName() +" ,Album = "+ songForArtist.getAlbumName()
+                    + " ,Track = "+songForArtist.getTrack());
         }
         datasource.close();
     }

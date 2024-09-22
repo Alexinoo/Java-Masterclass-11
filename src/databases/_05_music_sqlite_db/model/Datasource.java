@@ -104,12 +104,44 @@ public class Datasource {
                         COLUMN_SONG_TRACK +" FROM "+ TABLE_ARTIST_SONG_VIEW +
             " WHERE "+ COLUMN_SONG_TITLE  +"=\"";
 
+
+    /*
+     * Using Prepared Statements
+     * - Use placeholders ? - this is what we use when we want to use PreparedStatements
+     * - When we're ready to use the query, we'll replace the placeholder with the actual title we want to query
+     * - This is what basically we've created:
+     *      SELECT name , album , track, title FROM artist_list WHERE title = ?;
+     * - With the constant below
+     * - Note that we don't put quotation marks around the song title
+     */
+    public static final String QUERY_VIEW_SONG_INFO_PREP =
+            "SELECT "+ COLUMN_ARTIST_NAME +" ,"+ COLUMN_SONG_ALBUM +", "+
+                    COLUMN_SONG_TRACK +" FROM "+ TABLE_ARTIST_SONG_VIEW +
+                    " WHERE "+ COLUMN_SONG_TITLE  +"= ?";
+
+    /*
+     * Declare an instance variable for the PreparedStatement, because we only want to create it once
+     * We don't want to create it everytime we query, because we only want it to be pre-compiled once
+     * If we were to create a new instance every time we did a query, we'd lose the performance benefit
+     *  that the PreparedStatement has
+     *
+     * - Create the instance in the open()
+     * - Note that we call conn.prepareStatement() to create that instance of PreparedStatement, and then passing
+     *    it the SQL we want it to execute
+     * - And also remember that the SQL contains placeholders that will be replaced everytime we use the statement
+     *   to make a query
+     * - Update the query() to use a PreparedStatement
+     */
+
+    private PreparedStatement querySongInfoView;
+
     // Initialize connection obj
     private Connection conn;
 
     public boolean open(){
         try{
             conn = DriverManager.getConnection(CONNECTION_STRING);
+            querySongInfoView = conn.prepareStatement(QUERY_VIEW_SONG_INFO_PREP);
             return true;
         }catch (SQLException exc){
             System.out.println("Couldn't connect to database : "+exc.getMessage());
@@ -117,8 +149,19 @@ public class Datasource {
         }
     }
 
+    /*
+     * Close connection resources
+     * Also close the PreparedStatement instance in the close()
+     *  - all the underlying resultSet will also be closed automatically
+     * The order is also important
+     *  - need to close PreparedStatement first, then connection
+     */
+
     public void close(){
         try{
+            if (querySongInfoView != null)
+                querySongInfoView.close();
+
             if (conn != null)
                 conn.close();
         }catch (SQLException exc){
@@ -330,7 +373,7 @@ public class Datasource {
     /*
      * Query artist_list VIEW
      * SELECT name , album , track, title FROM artist_list WHERE title = 'Go Your Own Way';
-     * QUERY_VIEW_SONG_INFO
+     *
      */
 
     public List<SongArtist> querySongInfoView(String title){
@@ -338,6 +381,7 @@ public class Datasource {
         sb.append(title);
         sb.append("\"");
 
+        System.out.println(sb);
         try(Statement statement = conn.createStatement();
         ResultSet resultSet = statement.executeQuery(sb.toString())){
 
@@ -353,6 +397,53 @@ public class Datasource {
 
         }catch (SQLException exc){
             System.out.println("Querying View Failed "+exc.getMessage());
+            return null;
+        }
+    }
+
+    /*
+     * Query artist_list VIEW - USING PREPARED STATEMENT
+     * SELECT name , album , track FROM artist_list WHERE title = ?;
+     *
+     *
+     * N/B : VERY IMPORTANT
+     * When we're using a PreparedStatement, the values being substituted are treated as literal values
+     * In other words, nothing within the value is treated as SQL
+     * Effectively, this is what was passed and got executed
+     *
+     *      SELECT name ,album, track FROM artist_list WHERE title="Go Your Own Way or 1=1 or "";
+     * Whatever we have typed in, is basically substituted for the Song title
+     * And since there isn't song with the title "Go Your Own Way or 1=1 or" , no records are returned
+     * A Malicious user can't inject SQL into the statement
+     * Anything substituted as a placeholder is treated as a single literal value and won't be interpreted as SQL
+     *
+     *
+     * When we're using a StringBuilder to build the query statement and concatenating the title, effectively
+     *  this is what is passed to the database and got executed
+     *
+     *      SELECT name ,album, track FROM artist_list WHERE title="Go Your Own Way" or 1=1 or "";
+     * It's really the double quotes in between that is making all the difference
+     *
+     * - close the prepared statement in the close()
+     */
+    public List<SongArtist> querySongInfoViewPrepStatement(String title){
+
+        try{
+            querySongInfoView.setString(1, title);
+            ResultSet resultSet = querySongInfoView.executeQuery();
+
+            List<SongArtist> songArtistsList = new ArrayList<>();
+            while (resultSet.next()){
+                SongArtist songArtist = new SongArtist();
+                songArtist.setArtistName(resultSet.getString(1));
+                songArtist.setAlbumName(resultSet.getString(2));
+                songArtist.setTrack(resultSet.getInt(3));
+                songArtistsList.add(songArtist);
+            }
+            return songArtistsList;
+
+        }catch (SQLException exc){
+            System.out.println("Querying View Failed: "+exc.getMessage());
             return null;
         }
     }
