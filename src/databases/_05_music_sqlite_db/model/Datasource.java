@@ -530,6 +530,158 @@ public class Datasource {
         }
     }
 
+    /*
+     * Insert into Artists Table
+     *  insertArtist(String name) : int
+     *
+     * Steps:
+     *  - query to check if the artist already exists
+     *      - if he exists,
+     *          - return the id that we retrieve from the result set. since we no longer need to insert a duplicate
+     *            because we found the artist on file
+     *          - will always be on column 1 since we're only returning the artist id
+     *      - if he doesn't exist
+     *          - insert the artist
+     *              - call insertIntoArtists.setString() with a placeholder index of 1 and pass the name variable
+     *              - call insertIntoArtists.executeUpdate()
+     *                  - note we're not calling execute(), as it returns a Boolean indicating what type of result
+     *                     the executed SQL statement returned
+     *                  - executeUpdate() returns the number of rows affected by the SQL statement that run
+     *              - since we're inserting a single row, we're only expecting 1 record to be returned
+     *                  - if it isn't, we're throwing an SQL exception, coz obviously something has gone wrong
+     *      - IF we get to the other point , we know there was a successful insertion,
+     *          - we call insertIntoArtists.getGeneratedKeys() and store that in the result set
+     *          - check if there is a record by calling next() on ResultSet instance
+     *              - retrieve the key via getInt(1) on the ResultSet instance
+     *              - and the key will be at position 1, since we only expect 1 key to be returned
+     *          - if no record was returned
+     *              - throw an SQL exception
+     *      - Finally returning that key to the caller
+     *  - Also notice, we're throwing an SQL Exception in this method because we want the caller to handle these
+     *  - And these makes things a little bit cleaner
+     *
+     */
+    private int insertArtist(String name) throws SQLException{
+
+        queryArtist.setString(1, name);
+        ResultSet resultSet = queryArtist.executeQuery();
+        // if a record was found - means artist already exists - we don't need to do anything
+        // proceed with the insert in the else statement
+        if (resultSet.next()){
+            return resultSet.getInt(1);
+        }else{
+            // Insert the artist, since they're not on file
+            insertIntoArtists.setString(1,name);
+            int affectedRows = insertIntoArtists.executeUpdate(); // save and let us know how many rows inserted
+            if (affectedRows != 1)
+                throw new SQLException("Couldn't insert artist");
+        }
+
+        // Retrieve generated key after successful insertion
+        ResultSet generatedKeys = insertIntoArtists.getGeneratedKeys();
+        if (generatedKeys.next())
+            return generatedKeys.getInt(1);
+        else
+            throw new SQLException("Couldn't get _id for artist");
+
+    }
+
+    /*
+     * The insertAlbum() is pretty much the same except that we'll change some variable names and messages
+     * We also have to set 2 values in the prepared statements
+     *  - we'll copy insertArtist() and change a few things
+     */
+
+    private int insertAlbum(String name, int artistId) throws SQLException{
+
+        queryAlbum.setString(1, name);
+        ResultSet resultSet = queryAlbum.executeQuery();
+        // if a record was found - means album already exists - we don't need to do anything
+        // proceed with the insert in the else statement
+        if (resultSet.next()){
+            return resultSet.getInt(1);
+        }else{
+            // Insert the album, since it's not on file
+            insertIntoAlbums.setString(1,name);
+            insertIntoAlbums.setInt(2,artistId);
+            int affectedRows = insertIntoAlbums.executeUpdate(); // save and let us know how many rows inserted
+            if (affectedRows != 1)
+                throw new SQLException("Couldn't insert album");
+        }
+
+        // Retrieve generated key after successful insertion
+        ResultSet generatedKeys = insertIntoAlbums.getGeneratedKeys();
+        if (generatedKeys.next())
+            return generatedKeys.getInt(1);
+        else
+            throw new SQLException("Couldn't get _id for album");
+
+    }
+
+    /*
+     * insertSong(title,artist,album,track) : void
+     *  - copy insertAlbum(name,artistId) and change some values
+     *
+     * call insertArtist(artist) - to get the artistId
+     *  - returns artist for existing/newly inserted, otherwise handle SQLException from here
+     *
+     * call insertAlbum(album, artistId) to get the album id
+     *  - returns album id for existing/newly inserted or handle SQLException from here
+     */
+
+    private void insertSong(String title, String artist , String album ,int track){
+        try{
+            /*
+             * start the transaction by turning off the auto-commit behaviour of the conn obj
+             * default behavior is to commit every change, and the DB does that by running every update,delete and
+                 insert statement as a transaction
+             */
+            conn.setAutoCommit(false);
+
+            //get artistId for the artist passed to this method
+            //will return artist id for an existing id, or the id for the newly inserted artist record
+            int artistId = insertArtist(artist);
+
+            //get albumId for the album passed to this method for a specific artist(passed artistId returned above)
+            //will return album id for an existing id, or the id for the newly inserted album record
+            int albumId = insertAlbum(album,artistId);
+
+            //Set various filed for inserts : track, title, album
+            insertIntoSongs.setInt(1, track);
+            insertIntoSongs.setString(2,title);
+            insertIntoSongs.setInt(3,albumId);
+
+            // Insert and return affected rows
+            int affectedRows = insertIntoSongs.executeUpdate(); // save and let us know how many rows inserted
+
+            // If we get 1 row affected, successful insertion, commit the transaction
+            if (affectedRows == 1)
+                conn.commit();
+            else
+                throw new SQLException("The Song insert failed");
+
+        }catch (SQLException exc){
+            // If something goes wrong, call rollback , which rolls back changes of out transaction
+            System.out.println("Insert song exception: "+ exc.getMessage());
+            try{
+                System.out.println("Performing rollback");
+                conn.rollback();
+            }catch (SQLException exc2) {
+                System.out.println("Oh boy!, Things are really bad: " + exc2.getMessage());
+            }
+        }finally {
+            // setting auto-commit to true to return to the default auto-commit behavior
+            // done here, whether the transaction succeeds or fails
+            try{
+                System.out.println("Resetting default commit behavior");
+                conn.setAutoCommit(true);
+            }catch (SQLException exc){
+                System.out.println("Couldn't reset auto-commit! "+exc.getMessage());
+            }
+        }
+
+    }
+
 
     // Query Artist table - try-catch-finally
    /* public List<Artist> queryArtist(){
