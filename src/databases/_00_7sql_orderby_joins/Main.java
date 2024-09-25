@@ -144,7 +144,7 @@ package databases._00_7sql_orderby_joins;
  * And if we really wanted to, we can actually tack an ORDER BY clause on the end of that if we want to sort the data
  *
  *      sqlite> SELECT track, title, name FROM songs
- *         ...>  INNER JOIN albums ON songs.album = albums._id;
+ *         ...>  INNER JOIN albums ON songs.album = albums._id
  *         ...>  ORDER BY albums.name, songs.track;
  *
  *
