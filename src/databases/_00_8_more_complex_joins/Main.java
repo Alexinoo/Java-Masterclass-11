@@ -39,7 +39,7 @@ package databases._00_8_more_complex_joins;
  *
  *       sqlite> SELECT artists.name ,albums.name,songs.track , songs.title FROM songs
  *             ...>  INNER JOIN albums ON songs.album = albums._id
- *             ...>  INNER JOIN artists ON album.artist = artists._id
+ *             ...>  INNER JOIN artists ON albums.artist = artists._id
  *             ...>  ORDER BY albums.name, songs.track;
  *
  * So we have chained INNER JOINS together so that we have songs INNER JOIN albums INNER JOIN artists
@@ -67,7 +67,7 @@ package databases._00_8_more_complex_joins;
  *
  *       sqlite> SELECT artists.name ,albums.name,songs.track , songs.title FROM songs
  *             ...>  INNER JOIN albums ON songs.album = albums._id
- *             ...>  INNER JOIN artists ON album.artist = artists._id
+ *             ...>  INNER JOIN artists ON albums.artist = artists._id
  *             ...>  WHERE albums.id = 19
  *             ...>  ORDER BY albums.name, songs.track;
  *
@@ -93,7 +93,7 @@ package databases._00_8_more_complex_joins;
  *
  *       sqlite> SELECT artists.name ,albums.name,songs.track , songs.title FROM songs
  *             ...>  INNER JOIN albums ON songs.album = albums._id
- *             ...>  INNER JOIN artists ON album.artist = artists._id
+ *             ...>  INNER JOIN artists ON albums.artist = artists._id
  *             ...>  WHERE albums.name = "Doolittle"
  *             ...>  ORDER BY albums.name, songs.track;
  *
