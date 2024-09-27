@@ -4,6 +4,64 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/*
+ * Datasource Class
+ *
+ *
+ * /////////////////
+ * Define Constants
+ * /////////////////
+ *
+ * Add CONSTANTS for :
+ *      - Database
+ *      - Connection String
+ *      - tables
+ *      - column names
+ *
+ * We'll keep all our database code within the model package
+ * Instead of connecting to the database directly from the main(), let's create a method within the datasource to do that
+ * We need to create a Connection instance variable because we'll want the user of the Datasource class to call a close() once they're
+ *  done working with the database
+ *
+ * /////////////////////////////
+ * Create a Connection Instance
+ *
+ *      private Connection conn;
+ *
+ *
+ *
+ * /////////////////////////////
+ *  Open - Establish connection
+ * /////////////////////////////
+ *
+ * open() : boolean
+ *
+ * We can use try-with-resources but we can as well use the traditional try-catch-finally so that we can get ourselves into the habit of
+ *  closing the resources manually
+ *
+ * Call getConnection(CONNECTION_STRING) on the DriverManager class and pass the CONNECTION_STRING constant
+ *  - Return true if a connection is established successfully
+ *
+ * Catch any SQLException and print something to the user to let them know that the connection was not successful
+ *  - Return false if otherwise
+ *
+ *
+ *
+ *
+ * ///////////////////////////////
+ *  Close - Disconnect connection
+ * //////////////////////////////
+ *
+ * close() : void
+ *
+ * Close the Connection instance
+ *  - Only if it's not NULL , so that we don't get a NullPointerException
+ *  - Call close() on the Connection instance
+ *
+ * Handle SQLException raised by the close()
+ */
+
+
 public class Datasource {
     public static final String DB_NAME = "music.db";
     public static final String CONNECTION_STRING = "jdbc:sqlite:C:\\JMC17\\Java-Masterclass-11\\"+ DB_NAME;
@@ -201,6 +259,9 @@ public class Datasource {
 
     //Initialize the PreparedStatements instances for the 3 INSERTS in the open()
     //Initialize the PreparedStatements instances for the 3 QUERIES in the open()
+    /*
+     *
+     */
     public boolean open(){
         try{
             conn = DriverManager.getConnection(CONNECTION_STRING);
