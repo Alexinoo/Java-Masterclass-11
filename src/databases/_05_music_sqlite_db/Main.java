@@ -109,6 +109,37 @@ import java.util.Scanner;
  * ///////////////////////////////
  * Writing Java Query for Artists
  *
+ * Let's write the queryArtist() in the Datasource class
+ *
+ * queryArtist() : List<Artist>
+ *  - Initialize both Statement and ResultSet obj to null
+ *  - Add a try-catch block
+ *  - In the try block
+ *      - Initialize statement obj by calling createStatement() on the Connection instance
+ *      - Call executeQuery(String sql) on the Statement instance and pass the SQL statement for fetching artists which is going to return
+ *           all the artist records with all column values
+ *
+ *      - Initialize a new ArrayList : artistsList
+ *
+ *      - Loop through the resultSet using a while loop
+ *          - For each record, create a new artist obj
+ *          - use the resultSet getter methods to get the values from the method
+ *          - set them to the artist instance
+ *          - add artist instance to the list
+ *      - After looping, return the list to the caller
+ *
+ *  - In the catch block
+ *      - print out error message if any
+ *      - return null
+ *  - In the finally block
+ *      - close both Statement and ResultSet instances using 2 try catch blocks
+ *      - catch any SQLException if any in both
+ *
+ * Rewrite the same method with try-with-resources
+ *  - Comment out on the old try catch
+ *
+ *
+ *
  *
  */
 
