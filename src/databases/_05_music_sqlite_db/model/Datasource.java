@@ -469,7 +469,8 @@ public class Datasource {
             ResultSetMetaData meta = results.getMetaData();
             int numOfColumns = meta.getColumnCount();
             for (int i = 1; i < numOfColumns; i++) {
-               System.out.format("Column %d in the songs table is named %s\n", i , meta.getColumnName(i));
+               System.out.format("Column %d in the songs table is named %s , holding data of type %s\n",
+                       i , meta.getColumnName(i),meta.getColumnTypeName(i));
             }
         }catch (SQLException exc){
             System.out.println("Query failed: "+exc.getMessage());

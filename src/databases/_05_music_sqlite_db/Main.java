@@ -733,6 +733,60 @@ import java.util.Scanner;
  *  class
  *
  *
+ *
+ * ///////////////////////////////
+ * ResultSet Meta Data - querySongsMetadata()
+ * ///////////////////////////////
+ *
+ * When we were working with the command line, we're able to query the schema from the tables in the database
+ * But when using JDBC, this is one area where the support for this and sometimes the way we do it can be different
+ *  depending on the database
+ * Unfortunately, SQLite doesn't have good support for querying the database schema
+ * The Connection class has a getMetaData() that is supposed to return info about the database tables
+ * But when using this method with a SQLite database, unfortunately the return object doesn't have any of it's
+ *  fields set and they're all null
+ * What we can do though is we can query metadata using the result set from a query
+ * Often this is sufficient because we're usually interested in the definition of a specific table
+ * For example, we may want to get the column index for a value or find out what the the column names are for a
+ *  table
+ *
+ * Let's add a method to the Datasource class to do a general query on the songs table and then we'll look at the
+ *  metadata, that comes back
+ *
+ *      String sql = "SELECT * FROM "+ TABLE_SONGS;
+ *
+ *      Statement statement = conn.createStatement();
+        ResultSet resultSet = statement.executeQuery(sql)
+ *
+ *      ResultSetMetaData meta = resultSet.getMetaData();
+        int numOfColumns = meta.getColumnCount();
+ *
+ *      for (int i = 1; i < numOfColumns; i++)
+               System.out.format("Column %d in the songs table is named %s\n", i , meta.getColumnName(i));
+ *
+ * We're performing a query and then we call resultSet.getMetaData() to get the schema info from the table
+ * We get the column count and then use the loop to print each column name
+ * Notice we initialize i to 1 because the first column is at position 1 and not position 0
+ * Using ResultSetMetaData, we can get info such as column names and types and their attributes, in other words
+ *  know whether they're nullable etc
+ *
+ * Let's now call querySongsMetadata() from the main()
+ *
+ *      datasource.querySongsMetadata();
+ *
+ *      - and we're able to print the column names for the songs table using meta.getColumnName(int index)
+ *
+ * In relation to the other types of information that we can look at, check oracle's documentation
+ * And we can see there's quite a few methods there that do various things
+ * And so it's worthwhile checking them
+ *
+ * For example, if we're in a situation where we didn't know the names of the columns in the table, or how
+ *  many they were, we can do a query that doesn't require that information and then get it from the ResultSet
+ * But at least we need to know the name of the table which we've done in this scenario that we've just coded
+ *
+ * As mentioned, this is 1 area , getting schema info where the support and the way of getting it can differ across
+ *  databases
+ *
  */
 
 public class Main {
@@ -741,7 +795,7 @@ public class Main {
 
         Datasource datasource = new Datasource();
 
-        if (!datasource.open()){
+        if (!datasource.open()) {
             System.out.println("Can't open datasource");
             return;
         }
@@ -752,12 +806,12 @@ public class Main {
             return;
         }
         for (Artist artist : artists) {
-            System.out.println("ID = "+artist.getId() + ", Name = "+ artist.getName());
+            System.out.println("ID = " + artist.getId() + ", Name = " + artist.getName());
         }
 
         System.out.println("_".repeat(50));
 
-        List<String> albums = datasource.queryAlbumsForArtist("Iron Maiden",Datasource.ORDER_BY_ASC);
+        List<String> albums = datasource.queryAlbumsForArtist("Iron Maiden", Datasource.ORDER_BY_ASC);
         //albums = datasource.queryAlbumsForArtist("Pink Floyd",Datasource.ORDER_BY_DESC);
         //albums = datasource.queryAlbumsForArtist("Carole King",Datasource.ORDER_BY_NONE);
 
@@ -769,14 +823,14 @@ public class Main {
 
         System.out.println("_".repeat(50));
 
-        List<SongArtist> songsByArtist = datasource.queryArtistsForSong("Go Your Own Way",Datasource.ORDER_BY_ASC);
+        List<SongArtist> songsByArtist = datasource.queryArtistsForSong("Go Your Own Way", Datasource.ORDER_BY_ASC);
         if (songsByArtist.isEmpty()) {
             System.out.println("Could not find the artist for the song!");
             return;
         }
         for (SongArtist songByArtist : songsByArtist) {
-            System.out.println("Artist Name = "+songByArtist.getArtistName() + ", Album Name = "+ songByArtist.getAlbumName()+
-                    ", Track no = "+songByArtist.getTrack());
+            System.out.println("Artist Name = " + songByArtist.getArtistName() + ", Album Name = " + songByArtist.getAlbumName() +
+                    ", Track no = " + songByArtist.getTrack());
         }
 
         /* Get songs table metadata */
@@ -786,24 +840,26 @@ public class Main {
         /* COUNT(*) FUNCTIONS - count number of songs in specified tables */
         System.out.println("_".repeat(50));
         int count = datasource.getCount(Datasource.TABLE_SONGS);
-        System.out.println("Number of songs is: "+count);
+        System.out.println("Number of songs is: " + count);
+
+
 
         /* Create VIEW - artist_list */
         System.out.println("_".repeat(50));
-        if (datasource.createViewForSongArtists()){
+        if (datasource.createViewForSongArtists()) {
             System.out.println("artist_list View Created..");
         }
 
         /* Query VIEW - artist_list */
         System.out.println("_".repeat(50));
         List<SongArtist> songsForArtistViewList = datasource.querySongInfoView("She's On Fire");
-        if (songsForArtistViewList.isEmpty()){
+        if (songsForArtistViewList.isEmpty()) {
             System.out.println("Couldn't find the artist for the song specified");
             return;
         }
-        for (SongArtist songForArtist: songsForArtistViewList) {
-            System.out.println("FROM VIEW - Artist = "+songForArtist.getArtistName() +" ,Album = "+ songForArtist.getAlbumName()
-                    + " ,Track = "+songForArtist.getTrack());
+        for (SongArtist songForArtist : songsForArtistViewList) {
+            System.out.println("FROM VIEW - Artist = " + songForArtist.getArtistName() + " ,Album = " + songForArtist.getAlbumName()
+                    + " ,Track = " + songForArtist.getTrack());
         }
 
         /*
@@ -833,13 +889,13 @@ public class Main {
         System.out.println("Enter a song title: ");
         String title = scanner.nextLine();
         List<SongArtist> songsForArtistViewListPrepStatement = datasource.querySongInfoViewPrepStatement(title);
-        if (songsForArtistViewListPrepStatement.isEmpty()){
+        if (songsForArtistViewListPrepStatement.isEmpty()) {
             System.out.println("Couldn't find the artist for the song specified");
             return;
         }
-        for (SongArtist songForArtist: songsForArtistViewListPrepStatement) {
-            System.out.println("FROM VIEW - Artist = "+songForArtist.getArtistName() +" ,Album = "+ songForArtist.getAlbumName()
-                    + " ,Track = "+songForArtist.getTrack());
+        for (SongArtist songForArtist : songsForArtistViewListPrepStatement) {
+            System.out.println("FROM VIEW - Artist = " + songForArtist.getArtistName() + " ,Album = " + songForArtist.getAlbumName()
+                    + " ,Track = " + songForArtist.getTrack());
         }
 
         /*
@@ -906,9 +962,9 @@ public class Main {
          */
 
 
-       // datasource.insertSong("Touch of Grey","Grateful Dead","In The Dark",1);
-       // datasource.insertSong("Like a Rolling Stone","Bob Dylan","Bob Dylan's Greatest Hits",5);
-        datasource.insertSong("Bird Dog","Everly Brothers","All-Time Greatest Hits",7);
+        // datasource.insertSong("Touch of Grey","Grateful Dead","In The Dark",1);
+        // datasource.insertSong("Like a Rolling Stone","Bob Dylan","Bob Dylan's Greatest Hits",5);
+        datasource.insertSong("Bird Dog", "Everly Brothers", "All-Time Greatest Hits", 7);
 
         /*
          * Close the connection
