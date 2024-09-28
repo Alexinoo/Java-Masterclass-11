@@ -567,6 +567,172 @@ import java.util.Scanner;
  * StringBuilder to a constant , but Tim would leave that as an exercise for us based on what we've done here
  *  with the queryAlbumsForArtist()
  * Might be a good challenge for us to actually do the same thing with CONSTANTS for the queryArtist()
+ *
+ *
+ *
+ *
+ * ///////////////////////////////
+ * Query Artist for Song Method - queryArtistsForSong(String songName , int sortOrder)
+ * ///////////////////////////////
+ *
+ * As mentioned earlier in the last video, we're going to redefine the queryAlbumsForArtist() even further and it
+ *  would be nicer if we could somehow have a place holder in the SQL statement for the artist's name
+ * And this would be dynamically replaced every time we performed a query rather than having to append the artist's
+ *  name to the statement, but hold that thought for a future video in this section
+ *
+ * Let's now do 1 of the queries that we expect our application would want to perform
+ * Let's add a method that would return which artist recorded a particular song
+ * One wrinkle here is that we'd want to return the artist name, the album name and the track no for the song in the
+ *  album
+ * To do that we'd need to create a class in our Model that would return this 3 values - SongArtist
+ *
+ * SongArtist : class
+ *
+ *      artistName : String
+ *      albumName : String
+ *      track   : int
+ *
+ *      getArtistName : String
+ *      getAlbumName : String
+ *      getTrack : int
+ *
+ *      setArtistName(String artist) : void
+ *      setAlbumName(String album) : void
+ *      setTrack(in track) : void
+ *
+ * Let's now go ahead and test our SQL statement that we're going to write with DB Browser
+ * We want to query artist for 3 songs
+ *  - Heartless
+ *  - She's On Fire
+ *  - Go You Own Way
+ *
+ * Separate SQL statements
+ *      SELECT * FROM songs WHERE title = 'Heartless';  --album = 308
+ *      SELECT * FROM albums WHERE album = 308;         --artist = 39
+ *      SELECT * FROM artists WHERE _id = 39;           --name = Heart
+ *
+ * Repeat the same SELECT above for the second song
+ *      SELECT * FROM songs WHERE title = 'She's On Fire';  --album = 248
+ *      SELECT * FROM albums WHERE album = 248;             --artist = 152
+ *      SELECT * FROM artists WHERE _id = 152;              --name = Aerosmith
+ *
+ * Repeat the same SELECT above for the 3rd song
+ *      SELECT * FROM songs WHERE title = 'Go Your Own Way';  --album = 416
+ *      SELECT * FROM albums WHERE album = 416;               --artist = 92
+ *      SELECT * FROM artists WHERE _id = 92;                 --name = Fleetwood Mac
+ *
+ * We now know that the SQL is right and we're able to get the info we need
+ * To achieve what we want though, we'll need to create an INNER JOIN on those various tables to get the info
+ * Create another tab and create the SQL below
+ *
+ *      SELECT artists.name , albums.name, songs.track FROM songs
+        INNER JOIN albums ON songs.album = albums._id
+        INNER JOIN artists ON albums.artist = artists._id
+        WHERE songs.title = "Go Your Own Way"
+        ORDER BY artists.name , albums.name COLLATE NOCASE ASC;
+ *
+ * Now that the above is working, we can now swing back to our Datasource and translate that into java code
+ * We'll start by adding the static parts of the SQL statement and the only varying parts are the song title and
+ *  sort oder and we'll do something similar to what we did when finding the albums for an artist
+ * We'll have a constant for the part of the statement that occurs before the song title and a constant for the
+ *  sort order
+ *
+ *       public static final String QUERY_ARTISTS_FOR_SONG_START =
+            "SELECT "+ TABLE_ARTISTS +"."+ COLUMN_ARTIST_NAME +", "+
+                    TABLE_ALBUMS+ "."+ COLUMN_ALBUM_NAME +", "+
+                    TABLE_SONGS+ "."+ COLUMN_SONG_TRACK + " FROM " + TABLE_SONGS +
+                    " INNER JOIN "+ TABLE_ALBUMS +" ON "+
+                            TABLE_SONGS +"."+COLUMN_SONG_ALBUM + "="+ TABLE_ALBUMS +"."+COLUMN_ALBUM_ID +
+                    " INNER JOIN "+ TABLE_ARTISTS +" ON "
+                            + TABLE_ALBUMS +"."+COLUMN_ALBUM_ARTIST + "="+ TABLE_ARTISTS +"."+COLUMN_ARTIST_ID+
+                    " WHERE "+ TABLE_SONGS + "."+ COLUMN_SONG_TITLE +" =\"";
+ *
+ * Then we add our Sort oder Constant
+ *
+ *      public static final String QUERY_ARTISTS_FOR_SONG_SORT =
+            " ORDER BY "+ TABLE_ARTISTS +"."+ COLUMN_ARTIST_NAME + ", "+
+                    TABLE_ALBUMS+ "."+ COLUMN_ALBUM_NAME +" COLLATE NOCASE ";
+ *
+ *
+ * Now we need to write queryArtistsForSong() which will be very similar to the method that queries the albums for
+ *  an artist
+ * However in this case we're going to return a List<SongArtist> objects
+ * Also we can't use our column index constants because they're returning columns from different tables
+ * We're okay to hard code the indices, because we can be sure that the order of the columns returned for this query
+ *  will always be the same even if the column position changes within the tables
+ * We've specified the columns that we want and their order in the query
+ *
+ * So let's now add queryArtistsForSong(String songName , int sortOrder)
+ *  - Takes 2 parameters : songName and sortOrder value
+ *  - Returns List<SongArtist>
+
+ *  - Create a StringBuilder obj and pass QUERY_ARTISTS_FOR_SONG_START constant
+ *  - Append songName passed as a parameter to this method
+ *  - Escape the closing double quotes
+ *
+ * Then append QUERY_ARTISTS_FOR_SONG_SORT constant if one is passed other than the ORDER_BY_NONE constant
+ *      - sorts by artist name, albums name too
+ * Order by DESC if the constant matches the ORDER_BY_DESC constant , otherwise, Order by ASC
+ *
+ *       if (sortOrder != ORDER_BY_NONE){
+            sb.append(QUERY_ARTISTS_FOR_SONG_SORT);
+            if (sortOrder == ORDER_BY_DESC)
+                sb.append("DESC");
+            else
+                sb.append("ASC");
+        }
+ *
+ * Print out the SQL statement, checks to see if there's any problems with it
+ *
+ * Next, we need to use try-with resources and query the database
+ *  - Initialize Statement obj from the Connection instance
+ *  - Create a ResultSet obj by calling executeQuery(sb.toString()) on Statement instance and pass our query String
+ *     that we build with StringBuilder class
+ *
+ *  - Initialize an ArrayList of SongArtist objects  - songArtists
+ *  - loop through the resultSet.next()
+ *      - Create a SongArtist object : songArtist
+ *          - call setArtistName() on songArtist obj & pass name of the artist obtained by resultSet.getString(1)
+ *          - call setAlbumName() on songArtist obj & pass name of the artist obtained by resultSet.getString(2)
+ *          - call setTrack() on songArtist obj & pass track no obtained by calling resultSet.getInt(3)
+ *
+ *      - add songArtist obj it to the songArtists arrayList
+ *
+ *  - return songArtists array list
+ *
+ *
+ * Let's now call queryArtistsForSong() from the main() to get the artists for one of these songs
+ * If songsByArtist is empty
+ *  - print could'nt find artists for the song
+ *
+ *      List<SongArtist> songsByArtist = datasource.queryArtistsForSong("Go Your Own Way",Datasource.ORDER_BY_ASC);
+        if (songsByArtist.isEmpty()) {
+            System.out.println("Could not find the artist for the song!");
+            return;
+        }
+ *
+ * Otherwise, loop and print the artist , album and the track no of the song
+ *
+        for (SongArtist songByArtist : songsByArtist) {
+            System.out.println("Artist Name = "+songByArtist.getArtistName() + ", Album Name = "+ songByArtist.getAlbumName()+
+                    ", Track no = "+songByArtist.getTrack());
+        }
+ *
+ *
+ * And if we run this, we get the results that we should het for the other songs as well
+ * i.e "Heartless" and "She's On Fire"
+ *
+ * Those are all the queries we're going to code for now
+ * Doing the others will just be a matter of defining the static constants and then building up the String in a new
+ *  method
+ * Depending on the query, we may have to create a new class to hold the results
+ * We didn't do any queries that contains wild cards but as we've seen when we do a query, it's just a matter of
+ *  writing a SQL statement, testing it against a database and then building the query string using a StringBuilder
+ *  and Constants
+ * Then we pass it to the statement.executeQuery() or statement.execute()  and process our results with the ResultSet
+ *  class
+ *
+ *
  */
 
 public class Main {
