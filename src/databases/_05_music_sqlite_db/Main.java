@@ -425,6 +425,148 @@ import java.util.Scanner;
  * At this point we've done 3 test case, with 3 test queries and now we're good to go
  * We'll start writing a method for querying albums for artists in Java using JDBC to execute these queries
  *
+ *
+ *
+ * ///////////////////////////////
+ * Query Albums by Artist Method - queryAlbumsForArtist(String name , int sortOrder)
+ * ///////////////////////////////
+ *
+ * We now know the SQL statement we want to use because we have tested that with 3 different artists and let's now p
+ *  proceed to change that to java code
+ * And we don't have to worry whether the SQL statement is correct or not because we have tested that it's working
+ *
+ * Takes 2 parameters:
+ *  - String artistName - the name of the artist we'd want to search albums for
+ *  - int sortOrder - The order we'd like our records to be sorted
+ * Returns a List of String objects which are the names of the albums rather than the full record , since we're
+ *  only asking for the name column
+ *
+ * Create a String builder for the query
+ *
+ *      StringBuilder sb = new StringBuilder("SELECT ");
+        sb.append(TABLE_ALBUMS);
+        sb.append('.');
+        sb.append(COLUMN_ALBUM_NAME);
+        sb.append(" FROM ");
+        sb.append(TABLE_ALBUMS);
+        sb.append(" INNER JOIN ");
+        sb.append(TABLE_ARTISTS);
+        sb.append(" ON ");
+        sb.append(TABLE_ALBUMS);
+        sb.append('.');
+        sb.append(COLUMN_ALBUM_ARTIST);
+        sb.append(" = ");
+        sb.append(TABLE_ARTISTS);
+        sb.append('.');
+        sb.append(COLUMN_ARTIST_ID);
+        sb.append(" WHERE ");
+        sb.append(TABLE_ARTISTS);
+        sb.append('.');
+        sb.append(COLUMN_ARTIST_NAME);
+        sb.append(" = \"");
+        sb.append(artistName);
+        sb.append("\"");
+ *
+ * Next, add the code to work on the sort order which is going to be similar to the one we had for queryArtist()
+ *
+ *  if (sortOrder != ORDER_BY_NONE){
+            sb.append(" ORDER BY ");
+            sb.append(TABLE_ALBUMS);
+            sb.append('.');
+            sb.append(COLUMN_ALBUM_NAME);
+            sb.append(" COLLATE NOCASE ");
+
+            if (sortOrder == ORDER_BY_DESC)
+                sb.append("DESC");
+            else
+                sb.append("ASC");
+ *
+ * And a good rule of thumb here is to print out the value, esp at the beginning just t make sure that the SQL
+ *  statement is correct
+ *
+ *      System.out.println(sb.toString());
+ *
+ * Next, we need to use try-with resources and query the database
+ *  - Initialize Statement obj from the Connection instance
+ *  - Create a ResultSet obj by calling executeQuery(sb.toString()) on Statement instance
+ *  - Initialize an ArrayList of Strings - albums
+ *  - loop through the resultSet.next()
+ *      - use resultSet getter methods to get the value of the column index 1 which is album name via getString(1)
+ *          - notice we're hard coding the column index 1 which corresponds to the index of a column in the ResultSet
+ *             and not the index of the column in the table
+ *          - our query returns only the album name, and so there's only 1 column and the indices count start at 1 and
+ *             not 0
+ *      - add it to the albums arrayList
+ *  - return albums array list
+ *
+ * /////
+ * Call queryAlbumsForArtist(String name , int sortOrder) from the main() and print the results
+ *
+ *      List<String> albums = datasource.queryAlbumsForArtist("Iron Maiden",Datasource.ORDER_BY_ASC);
+        //albums = datasource.queryAlbumsForArtist("Pink Floyd",Datasource.ORDER_BY_DESC);
+        //albums = datasource.queryAlbumsForArtist("Carole King",Datasource.ORDER_BY_NONE);
+
+        if (albums.isEmpty) {
+            System.out.println("No albums!");
+            return;
+        }
+        albums.forEach(System.out::println);
+ *
+ *      - And if we run this,
+ *          - we get the 3 albums for the artist "Iron Maiden"
+ *          - we get the 12 albums for the artist "Pink Floyd"
+ *          - we get the 1 album for the artist "Carole King"
+ *
+ * //// Summary
+ * We've build up a long query statement , and looking at it, most of the statement is static.
+ * It's really only the artist's name and sort order that may be different each time the method runs
+ * So rather than building the query statement from scratch each time the method executes, we can define bits of it
+ *  as CONSTANTS
+ * So let's go ahead and do that at the to of the Datasource
+ *
+ *       public static final String QUERY_ALBUMS_BY_ARTIST_START =
+            "SELECT "+ TABLE_ALBUMS + "."+ COLUMN_ALBUM_NAME +" FROM "+ TABLE_ALBUMS +
+                    " INNER JOIN "+ TABLE_ARTISTS +" ON "+ TABLE_ALBUMS +"."+ COLUMN_ALBUM_ARTIST +
+                    " = "+ TABLE_ARTISTS +"."+COLUMN_ARTIST_ID+
+                    " WHERE "+ TABLE_ARTISTS +"."+ COLUMN_ARTIST_NAME + " = \"";
+ *
+ * Let's also do the same for the Order clause
+ *
+ *      public static final String QUERY_ALBUMS_BY_ARTIST_SORT =
+            " ORDER BY "+ TABLE_ALBUMS +"."+ COLUMN_ALBUM_NAME +" COLLATE NOCASE ";
+ *
+ * We could have a StringBuilder with a bunch of chained append calls similar to what we did in the method, but since
+ *  the concatenations will only take place once when a Datasource instance is created, we're going to stick with
+ *  concatenations
+ * Often a Datasource class is used as a Singleton, and that means there would only be 1 instance of the class
+ * We'll see how this will work when we use our model from a GUI application
+ * You'll probably agree that these Strings look pretty ugly, but if we ever have to change the name of a table or
+ *  a column, we'll be glad we didn't hard code any names and we'll only have to type these strings in one place
+ * Hopefully, we can start imagining how we may end up with lots of Constants, which is why they'd often be put into
+ *  their own classes
+ *
+ * Let's now modify our code to use the constants
+ *
+        StringBuilder sb = new StringBuilder(QUERY_ALBUMS_BY_ARTIST_START);
+        sb.append(artistName);
+        sb.append("\"");
+ *
+ * Then append QUERY_ALBUMS_BY_ARTIST_SORT constant if one is passed other than the ORDER_BY_NONE constant
+ *  if (sortOrder != ORDER_BY_NONE){
+            sb.append(QUERY_ALBUMS_BY_ARTIST_SORT);
+            if (sortOrder == ORDER_BY_DESC)
+                sb.append("DESC");
+            else
+                sb.append("ASC");
+        }
+ *
+ * And now our method is a lot more concise and better and easier to read
+ * And if we run this, we get pretty much the same or identical results that we got earlier
+ *
+ * We could do something similar with the queryArtist() and make most of the String that we're building up the
+ * StringBuilder to a constant , but Tim would leave that as an exercise for us based on what we've done here
+ *  with the queryAlbumsForArtist()
+ * Might be a good challenge for us to actually do the same thing with CONSTANTS for the queryArtist()
  */
 
 public class Main {
@@ -439,7 +581,7 @@ public class Main {
         }
 
         List<Artist> artists = datasource.queryArtist(Datasource.ORDER_BY_NONE);
-        if (artists == null || artists.isEmpty()) {
+        if (artists.isEmpty()) {
             System.out.println("No artists!");
             return;
         }
@@ -453,7 +595,7 @@ public class Main {
         //albums = datasource.queryAlbumsForArtist("Pink Floyd",Datasource.ORDER_BY_DESC);
         //albums = datasource.queryAlbumsForArtist("Carole King",Datasource.ORDER_BY_NONE);
 
-        if (albums == null) {
+        if (albums.isEmpty()) {
             System.out.println("No albums!");
             return;
         }
