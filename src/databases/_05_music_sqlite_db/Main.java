@@ -137,8 +137,59 @@ import java.util.Scanner;
  *
  * Rewrite the same method with try-with-resources
  *  - Comment out on the old try catch
+ *  - Use try-with-resources
+ *      - delete the finally block , because both the Statement and the ResultSet will be closed
+ *         automatically whether there's an exception generated or not
+ *
+ * In this scenario, the callers of the method will still have to handle a null return value , however they see it
+ *  fit
+ * In other words the process that's calling the queryArtists() has to actually check and see whether what we're
+ *  getting back in NULL or not
+ *
+ * //// Calling queryArtists() ///////
+ *
+ *  List<Artist> artists = datasource.queryArtist();
+ *
+ *  - Check if artists is null or empty
+ *      - print to the user that no artist was found
+ *
+ *  - Otherwise
+ *      - Loop through the artists ArrayList using enhanced for loop and print details to the console
+ *
+ *      System.out.println("ID = "+artist.getId() + ", Name = "+ artist.getName());
+ *
+ * We get a list of the artists , 201 in total
+ * The main() doesn't make any assumptions about how or where the data is stored
+ * The data could be coming from an xml file, a spreadsheet, a MyQL database or even a flat file
+ * If we change how and where the data is stored as long as we don't have to change any of the method signatures
+ *  in the data source class, we won't have to change any classes that uses it
+ * And obviously the main() would remain unchanged
+ *
+ * //// A couple of more things to note ///
+ *
+ * First
+ * The statement.close() closes the statement and any resultSet obj associated with it
+ * We don't have to explicitly close the resultSet and that might make a difference to the code we've written
+ * But if we were explicitly closing resources, closing the statement would close the resultSet
  *
  *
+ * Second
+ * We can make a quick improvement to the existing code
+ * We're using column names to get the field values, but we can use the column index instead and that's usually
+ *  more efficient
+ * However there's a trade off
+ *  - If we use column names, we won't have to change the code if the positions of the columns change within the
+ *     table
+ *      - For example, we might add a column to the artists table and position it between _id and name columns
+ *  - If we use name columns, we won't have to change any code
+ *  - But if we've used column indices , then we would have to change them
+ * However, this easily handled if we use CONSTANTS in our column indices which, of course we will do
+ * It's important to note that when working with result sets , the index we pass to the resultSet getter methods
+ *  is the index of the column in the resultSet and not in the table
+ * When we retrieve all the columns, the resultSet indices will be the same as the table indices
+ * But if we only retrieve a specific column, or set of columns, then the result set indices may not actually match
+ *  the table column indices
+ * We'll start adding all the Column indices constants for all the tables
  *
  *
  */
@@ -155,7 +206,7 @@ public class Main {
         }
 
         List<Artist> artists = datasource.queryArtist(Datasource.ORDER_BY_NONE);
-        if (artists == null) {
+        if (artists == null || artists.isEmpty()) {
             System.out.println("No artists!");
             return;
         }
