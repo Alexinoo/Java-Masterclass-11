@@ -7,6 +7,142 @@ import databases._05_music_sqlite_db.model.SongArtist;
 import java.util.List;
 import java.util.Scanner;
 
+/*
+ * The Music SQLite Database
+ *
+ * Let's now switch to using music db so that we can have a decent set of data to work with as we look into more details at performing
+ *  queries
+ *
+ * Download the same database music.zip again, unzip it and add it to this project
+ *
+ * Open the database from the DB Browser for SQLite and we can now see the 3 tables from the music db: artists , albums and songs
+ * And we can browse the data as well for all the tables and now we have a good representation of the data
+ *
+ * Let's now pay more attention to how we structure our code, especially since we'd want to work with the music db with a GUI type
+ *  application
+ * We'll start by connecting to the database and use String CONSTANTS from the beginning
+ *
+ * Create a package known as model
+ *
+ *  - Create Datasource class
+ *
+ * ////////////////
+ * Test Connection
+ * ////////////////
+ *
+ * Create an instance of the Datasource class
+ *
+ *      Datasource datasource = new Datasource();
+ *
+ *  - Call open() from the Datasource instance
+ *      - Check if the result is false, and print to the user that the connection to the database failed
+ *      - If this is the case, check if the sqlite jdbc driver is added to the project and rerun again
+ *      - If no errors, then the connection is working fine
+ *
+ *
+ * ////////////////////////////
+ * First Query - Artists Table
+ *
+ * We'll select all the rows in the table and print them to the console
+ * We'll add a method to the Datasource class to do this
+ * In large enterprise applications, we may need to create a Class in the model package for each table and the connections might be coming
+ *  from a connection pool
+ * But for this application, we'll keep our database methods within the Datasource class
+ * In this scenario, do we want the method to return a ResultSet ?
+ *  - We'll no we don't, because we don't want classes that use methods in the model package to have to understand the implementation details
+ *     of the model
+ *  - That way if we change databases later, or change to something that isn't a database, an xml file for example, we only have to change the
+ *     code in the model package
+ *  - So, instead of returning a ResultSet, we can return a List<Artist>
+ *
+ * That means we'll need classes for the Artist, Album and the Song , and we'll create those in the model package
+ *
+ * So let's go ahead and create those classes plus the Getter and Setter methods
+ *
+ *
+ * ////////////////////////////////
+ * Artist , Album and Song classes
+ * ////////////////////////////////
+ *
+ * Artist : class
+ *      id : int
+ *      name : String
+ *
+ *      getId(): id
+ *      getName(): String
+ *
+ *      setId(int id) : void
+ *      setName(String name) : void
+ *
+ * Album : class
+ *      id : int
+ *      name : String
+ *      artistId : int
+ *
+ *      getId() : id
+ *      getName() : String
+ *      getArtistId() : int
+ *
+ *      setId(int id) : void
+ *      setName(String name) : void
+ *      setArtistId(int artistId) : void
+ *
+ * Song : class
+ *
+ *      id : int
+ *      track : int
+ *      name : String
+ *      albumId : int
+ *
+ *      getId() : id
+ *      getTrack() : id
+ *      getName() : String
+ *      getAlbumId : id
+ *
+ *      setId(int id) : void
+ *      setTrack(int track) : void
+ *      setName(String name) : void
+ *      setAlbumId(int id) : void
+ *
+ *
+ *
+ * ///////////////////////////////
+ * Writing Java Query for Artists
+ *
+ * Let's write the queryArtist() in the Datasource class
+ *
+ * queryArtist() : List<Artist>
+ *  - Initialize both Statement and ResultSet obj to null
+ *  - Add a try-catch block
+ *  - In the try block
+ *      - Initialize statement obj by calling createStatement() on the Connection instance
+ *      - Call executeQuery(String sql) on the Statement instance and pass the SQL statement for fetching artists which is going to return
+ *           all the artist records with all column values
+ *
+ *      - Initialize a new ArrayList : artistsList
+ *
+ *      - Loop through the resultSet using a while loop
+ *          - For each record, create a new artist obj
+ *          - use the resultSet getter methods to get the values from the method
+ *          - set them to the artist instance
+ *          - add artist instance to the list
+ *      - After looping, return the list to the caller
+ *
+ *  - In the catch block
+ *      - print out error message if any
+ *      - return null
+ *  - In the finally block
+ *      - close both Statement and ResultSet instances using 2 try catch blocks
+ *      - catch any SQLException if any in both
+ *
+ * Rewrite the same method with try-with-resources
+ *  - Comment out on the old try catch
+ *
+ *
+ *
+ *
+ */
+
 public class Main {
 
     public static void main(String[] args) {
