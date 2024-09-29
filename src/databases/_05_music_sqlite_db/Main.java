@@ -787,6 +787,99 @@ import java.util.Scanner;
  * As mentioned, this is 1 area , getting schema info where the support and the way of getting it can differ across
  *  databases
  *
+ *
+ *
+ *
+ *
+ * //////////////////////
+ *  Functions  - getCount(String table):int
+ *  and
+ *  Views
+ * //////////////////////
+ *
+ * SQL Functions : Count() , MIN() , MAX() , SUM()
+ *
+ * As we've seen in previous videos, when we want to perform a query, we build up a query string and then we pass it
+ *  to statement.executeQuery()
+ * The same applies when our query contains functions, but how do we get into the result
+ *
+ * For example:
+ *      SELECT COUNT(*) FROM songs;
+ *
+ * So how do we get count from the resultSet of the above query ?
+ *
+ * Let's take a look at how we can achieve this by adding a method in our Datasource class
+ *
+ * Create method : getCount(String table) : int
+ *
+ *      String sql = "SELECT COUNT(*) FROM "+ table;
+ *      Statement statement = conn.createStatement();
+        ResultSet results = statement.executeQuery(sql)
+ *
+ *      int count = results.getInt(1);
+        int min = results.getInt(2);
+ *
+        return count;
+ *
+ *      - sql - count the number of records in the table passed to this method
+ *      - process query by creating a Statement obj and pass sql statement to statement.executeQuery(String sql)
+ *
+ *      - process ResultSet the same way as you would but by calling the appropriate getter methods
+ *      - To get the result, we treat the function result as a column
+ * Since we're only asking for the count, the result will be at column 1
+ *
+ * //// Call getCount(String table)
+ * Let's call this method now from the main() and print the number of records returned from the table passed
+ *
+ *      int count = datasource.getCount(Datasource.TABLE_SONGS);
+        System.out.println("Number of songs is: " + count);
+ *
+ * And if we run this we get, the number of songs returned to be 5350
+ * The fact that our Constant has table in it, doesn't break the separation between our model code and the rest
+ *  of the application
+ * Nothing about it forces main() to know that the data is stored in a database
+ *
+ * Let's change the getCount() to do a bit more
+ * Let's also try to retrieve the minimum song value
+ *
+ * Update our SELECT statement as follows
+ *
+ *      String sql = "SELECT COUNT(*), MIN(_id) FROM "+ table;
+ *
+ * Then we'll need to retrieve the min value as follows
+ *
+ *      int min = resulSet.getInt(2);
+ * So we're getting our min result here and that's column 2 and extracting it into our min integer variable
+ *
+ * And now that we can't return 2 integers, let's just print them out
+ *
+ *      System.out.printf("Count = %d , Min = %s\n",count , min);
+ * And now if we run this, we get count = 5350, and min= 1 , and this is true since the minimum value is 1 which
+ *  would be correct because that's the first entry in the table
+ *
+ * ///// Aliases
+ * This works but is a good practice to assign names as the resulting columns using AS
+ * Modify our sql statement to use Aliases as follows
+ *
+ *      String sql = "SELECT COUNT(*) AS count, MIN(_id) AS min_id FROM "+ table;
+ *
+ * And now we need to call an overloaded method and pass the aliases instead of the column indices
+ *
+ *      int count = results.getInt("count");
+        int min = results.getInt("min_id");
+ *
+ * And if we run this, we get the same results
+ * So if we wanted alter the query possibly to return more results, and the column positions of the resulting values
+ *  change, we won't have to change the getter calls
+ *
+ *
+ *
+ *
+ * /////////////////////////////
+ * Creating and Querying Views
+ * /////////////////////////////
+ *
+ *
  */
 
 public class Main {

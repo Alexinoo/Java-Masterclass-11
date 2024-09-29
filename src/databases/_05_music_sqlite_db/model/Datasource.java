@@ -499,7 +499,7 @@ public class Datasource {
             int min = results.getInt("min_id");*/
 
 
-            System.out.printf("Count = %d , Min = %s\n",count , min);
+            System.out.printf("Count = %d , Min = %d\n",count , min);
             return count;
         }catch (SQLException exc){
             System.out.println("Query failed: "+exc.getMessage());
