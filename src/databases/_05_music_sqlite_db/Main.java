@@ -880,6 +880,70 @@ import java.util.Scanner;
  * /////////////////////////////
  *
  *
+ * Let's take a look at creating and querying views
+ * There's really nothing about working with views using JDBC
+ * When we need to use views from an application , it's possible that the view will ship with the database.
+ * In addition, we don't want to create the view everytime the application runs
+ * Let's create the same view we created when working from the command line the one that contains the following columns , artist , album
+ *  track and title
+ *
+ * When the user wants to know the artist for a song we can query the view instead of a JOIN
+ *
+ * Write the SQL to create the view and execute the SQL to create the view
+ *
+ *   CREATE VIEW IF NOT EXISTS artist_list AS
+     SELECT artists.name , albums.name AS album, songs.track, songs.title FROM songs
+     INNER JOIN albums ON songs.album = albums._id
+     INNER JOIN artists ON albums.artist = artists._id
+     WHERE songs.title = "Go Your Own Way"
+     ORDER BY artists.name , albums.name , songs.track;
+ *
+ * Take note that we're using IF NOT EXISTS, and SQL will only create the view if it doesn't already exist and thta's how we would normally create
+ *  it
+ * Let's now create in Java code in the Datasource class
+ * We'll add this SQL statement using constants
+ *
+ * First
+ *  - Define the name of the view using a constant
+ *
+ *       public static final String TABLE_ARTIST_SONG_VIEW = "artist_list";
+ *
+ *  - The add CREATE VIEW script using a constant
+ *
+ *       public static final String CREATE_ARTIST_FOR_SONG_VIEW =
+            "CREATE VIEW IF NOT EXISTS "+ TABLE_ARTIST_SONG_VIEW +" AS SELECT "+
+                    TABLE_ARTISTS +"."+ COLUMN_ARTIST_NAME + ", "+
+                    TABLE_ALBUMS +"."+ COLUMN_ALBUM_NAME+ " AS album, "+
+                    TABLE_SONGS +"."+ COLUMN_SONG_TRACK + ", "+
+                    TABLE_SONGS + "."+ COLUMN_SONG_TITLE+
+            " FROM "+ TABLE_SONGS +
+            " INNER JOIN "+ TABLE_ALBUMS + " ON "+
+                    TABLE_SONGS +"."+ COLUMN_SONG_ALBUM +" = "+ TABLE_ALBUMS +"."+COLUMN_ALBUM_ID +
+            " INNER JOIN "+ TABLE_ARTISTS + " ON "+
+                    TABLE_ALBUMS +"."+ COLUMN_ALBUM_ARTIST +" = "+ TABLE_ARTISTS +"."+COLUMN_ARTIST_ID +
+            " ORDER BY "+ TABLE_ARTISTS +"."+ COLUMN_ARTIST_NAME + ", "+ TABLE_ALBUMS +"."+ COLUMN_ALBUM_NAME+
+            ", "+ TABLE_SONGS +"."+ COLUMN_SONG_TRACK;
+ *
+ *  - Then add a method for creating the view: createViewForSongArtists
+ *
+ *      Statement statement = conn.createStatement();
+ *      statement.execute(CREATE_ARTIST_FOR_SONG_VIEW);
+ *
+ * We're returning true to the caller to let them know that the VIEW was successfully created and false if otherwise
+ *
+ *
+ * ////////
+ * Then call createViewForSongArtists() from the main() as follows
+ *
+ *      if (datasource.createViewForSongArtists())
+            System.out.println("artist_list View Created..");
+ *
+ * Print out to the user if the VIEW is successfully created
+ * Run and confirm with the DB Browser for SQLite that the VIEW was created
+ *  - Check that it still has the data
+ *
+ * Re-run it again, and we still don't get an error, since the VIEW already exist, our SQL statement can only create one if it doesn't exist
+ *
  */
 
 public class Main {
@@ -939,9 +1003,8 @@ public class Main {
 
         /* Create VIEW - artist_list */
         System.out.println("_".repeat(50));
-        if (datasource.createViewForSongArtists()) {
+        if (datasource.createViewForSongArtists())
             System.out.println("artist_list View Created..");
-        }
 
         /* Query VIEW - artist_list */
         System.out.println("_".repeat(50));
