@@ -1039,6 +1039,214 @@ import java.util.Scanner;
  *  of connections, then it would definitely impact performance
  * Also the way that we're building our query strings, makes our database vulnerable to hacking attempts
  *
+ *
+ *
+ *
+ *
+ *
+ * ///////////////////////////////////////////////
+ *  SQL Injection Attacks and Prepared Statements
+ * ///////////////////////////////////////////////
+ *
+ * Tim alluded at the end of the last video that the way we're building our query strings makes our database vulnerable to hacking attempts
+ * Let's go ahead and demonstrate this
+ *
+ * Rather than hard coding the title of the song to querySongInfoView(String title) method, we're going to let the user enter a song title in
+ *  the console using a Scanner class
+ * Then we'll call the querySongInfoView() to get the information for the title
+ * We'll prompt the user for a song title and pass the input to querySongInfoView(String title)
+ *
+ *      Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter a song title: ");
+        String title = scanner.nextLine();
+        List<SongArtist> songsForArtistViewListPrepStatement = datasource.querySongInfoView(title);
+        if (songsForArtistViewList.isEmpty()){
+            System.out.println("Couldn't find the artist for the song specified");
+            return;
+        }
+        for (SongArtist songForArtist: songsForArtistViewList) {
+            System.out.println("FROM VIEW - Artist = "+songForArtist.getArtistName() +" ,Album = "+ songForArtist.getAlbumName()
+                    + " ,Track = "+songForArtist.getTrack());
+        }
+ *
+ * Run this and enter "Go Your Own way" and confirm we get our results back as we'd expect , "Fleetwood Mac" and the 4 albums the particular
+ *  song is on
+ *
+ * Now we'll do something different and illustrate how we can get into trouble
+ * Re run and write below :
+ *      Go Your Own Way" or 1=1 or "
+ *
+ *      - returns all the records from the artist_list view
+ *
+ * The SQL statement executed is as follows:
+ *
+ *      SELECT name ,album, track FROM artist_list WHERE title="Go Your Own Way or 1=1 or "";
+ *
+ * So what, we've done is we have performed what's known as a SQL Injection Attack
+ * Perhaps it doesn't matter in this case, if a user gets to see all the songs in a view, but what happens if this was a view or table of
+ *  user ids and passwords for example, or it contained credit card details or rather sensitive info or even medical info
+ * That wouldn't be a good thing and how did this actually happen
+ *
+ * When we built the SQL statement, we're blindly concatenating whatever the users typed
+ * So when we entered the above string, the code built the following SQL statement below
+ *
+ *      SELECT name ,album, track FROM artist_list WHERE title="Go Your Own Way or 1=1 or "";
+ *
+ * Since 1=1 will be true for every record, all the records in the artist_list view are returned
+ * This is known as a SQL Injection Attack because a user has injected SQL into the statement that we didn't intend to run
+ *
+ * The user in this scenario would normally be a hacker, because they know something about how applications that use databases are coded
+ * They guess that we'd be concatenating the name into a WHERE clause as we're doing here and since it's a String , they guess that we're
+ *  concatenating a closing quote which is why they end their input String with a double quote
+ *
+ * A malicious user can even do something like DROP tables
+ * Since we're using JDBC , we do have some protection against that at least when using the SQLite driver, the execute() and executeQuery()
+ *  won't run more than a single SQL statement
+ *
+ * In other words, a user can't tack on something like ; DROP TABLE songs
+ *
+ * But if an application written in a language like perhaps PHP was running SQL directly based on user input rather than going through an API,
+ *  then a malicious user would be able to execute whatever SQL statements they wanted
+ *
+ * So, instead of building up query strings and using the statement class to execute them, we should really be using the prepared statements
+ *  class
+ * PreparedStatements can help prevent SQL Injection Attacks, because when we use them, we don't concatenate user input into the SQL statement
+ *  that will ultimately be running
+ * As we've noted, the only thing that changes between queries is the song title
+ *
+ * It would be nice if we could have placeholders in SQL statements for the values that change from query to query and PreparedStatements
+ *  allow us to do just that
+ *
+ * ////// Implementation
+ *
+ * We'll add a Constant that queries from the VIEW, that will ultimately use PreparedStatement
+ *
+ *   public static final String QUERY_VIEW_SONG_INFO_PREP =
+            "SELECT "+ COLUMN_ARTIST_NAME +" ,"+ COLUMN_SONG_ALBUM +", "+
+                    COLUMN_SONG_TRACK +" FROM "+ TABLE_ARTIST_SONG_VIEW +
+                    " WHERE "+ COLUMN_SONG_TITLE  +"= ?";
+ *
+ *
+ * The only difference between this constant and the one we used before is that we're using a question mark (?) for the song title
+ * This is the placeholder character that we use in Prepared Statements
+ * When we're ready to perform the query, we'll replace the placeholder with the actual title we want to query
+ *
+ * This is what basically we've created, with the constant line above
+ *
+ *      SELECT name , album , track, title FROM artist_list WHERE title = ?;
+ *
+ * Note that importantly, we don't put quotation marks around the song title
+ * When replacing the placeholder in a Prepared Statement, the database understands that a String like "Go Your Own Way" is one value
+ * So we only substitute a single value for each placeholder
+ *
+ * We'll also need to declare an instance variable for the PreparedStatement and that's because we only want to create it once
+ * We don't want to create it everytime we query because we only want it to be pre-compiled once
+ * If we were to create a new instance every time we did a query, we'd lose the performance benefit that the PreparedStatement comes with
+ *
+ * So let's add a Prepared Statement Instance variable
+ *
+ *      private PreparedStatement querySongInfoView;
+ *
+ * Then we'll need to initialize it in the open() and pass the Query Constant to prepareStatement() on the Connection instance
+ *
+ *      querySongInfoView = conn.prepareStatement(QUERY_VIEW_SONG_INFO_PREP);
+ *
+ * We could check for null in the querySongInfoView(), and create the instance there
+ * But instead we'll create the instance in the open()
+ *
+ * We call the connection.prepareStatement() to create that instance of Prepared Statement passing at the SQL statement we want to execute
+ * And that SQL remember contains the placeholders that will be replaced everytime we use the statement to make a query
+ *
+ *
+ *
+ * Create a method that uses PreparedStatement : querySongInfoViewPrepStatement
+ *
+ *      querySongInfoView.setString(1, title);
+        ResultSet resultSet = querySongInfoView.executeQuery();
+ *
+ * And now we don't need the StringBuilder anymore
+ * We're using PreparedStatement instance to call setString(1,title) and set the title as the first parameter in the query for PreparedStatement
+ * And since we're passing title as String to this method, we're using the setString()
+ * There are other methods that we can use e.g. setInt depending on the type of variable you're using
+ *
+ * We also have to specify the position of the placeholder we want to replace because there can be more than 1
+ *
+ * As usual, when working with JDBC, the position is 1-based
+ *
+ * Note that the prepared statement below, is a subclass of the Statement
+ *
+ *      querySongInfoView.setString(1, title);
+        ResultSet resultSet = querySongInfoView.executeQuery();
+ *
+ * In other words, it's got all the other methods that the Statement class has such as execute() , executeQuery() and that's why we're able to
+ *  use executeQuery()
+ *
+ *
+ * Closing Resources
+ * Now that we're not declaring resources with querySongInfoViewPrepStatement() , we'll need a finally clause to close them
+ * Tim said that if we close the statement, any associated ResultSte is also closed and there can only be 1 active result set associated with
+ *  a statement
+ * If we use a statement to do more than 1 query, which is very common with prepared statements , each time we need to do a new query, the existing
+ *  result set is closed and a new one is created
+ * So, the upshot of all this is that we don't have to worry about closing the result set, when we're using the PreparedStatement
+ * When we close the PreparedStatement whichever ResultSet is active will also be closed
+ * And we should also close the prepared statement in the close() as opposed to closing it in the querySongInfoViewPrepStatement()
+ *
+ * Add below to close()
+ *
+ *       if (querySongInfoView != null){
+                querySongInfoView.close();
+ *          }
+ *
+ * ////
+ *
+ * Call querySongInfoViewPrepStatement(String title) from the main()
+ *
+ *      Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter a song title: ");
+        String title = scanner.nextLine();
+ *
+ *      List<SongArtist> songsForArtistViewListPrepStatement = datasource.querySongInfoViewPrepStatement(title);
+        if (songsForArtistViewListPrepStatement.isEmpty()) {
+            System.out.println("Couldn't find the artist for the song specified");
+            return;
+        }
+        for (SongArtist songForArtist : songsForArtistViewListPrepStatement) {
+            System.out.println("FROM VIEW - Artist = " + songForArtist.getArtistName() + " ,Album = " + songForArtist.getAlbumName()
+                    + " ,Track = " + songForArtist.getTrack());
+        }
+ *
+ *
+ * Test with different test cases and confirm everything is working
+ *
+ * But most importantly, let's run it again and presume that this time we're a hacker and we'll try to enter that same code we did last time
+ * This time we get a different message : "Couldn't find the artist for the song" which means no data was returned
+ *
+ * ///// Explanation
+ * But how did the PreparedStatement protect the database against SQL Injection Attack ?
+ *
+ * If the String is simply being substituted for the question mark (?), wouldn't we see the same results as before ?
+ *
+ * Well, we don't and that's because when we're using a PreparedStatement, the values being substituted are treated as literal values
+ *      - In other words, nothing within the value is treated as SQL
+ *
+ * When we're using a StringBuilder to build the query statement and concatenating the title, effectively this is what is passed to the
+ *  database and got executed
+ *
+ *      SELECT name ,album, track FROM artist_list WHERE title="Go Your Own Way" or 1=1 or "";
+ *
+ * But in the second scenario, with prepared statement , this is what is sent to the server
+ *
+ *       SELECT name ,album, track FROM artist_list WHERE title="Go Your Own Way or 1=1 or "";
+ *
+ * And we can se the differences here, in the 2nd scenario, whatever we have typed in, is basically substituted for the Song title
+ * It's really the double quotes in between that is making all the difference, and the database are being searched for a song that
+ *  equals that in it's entirety
+ * And since there's no song on the databases with the title "Go Your Own Way or 1=1 or "" , no records were returned
+ *
+ * In other words, a malicious user can't inject SQL into the statement
+ * Because anything substituted as a placeholder is treated as a single literal value and won't be interpreted as SQL
+ *
  */
 
 public class Main {

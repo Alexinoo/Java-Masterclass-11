@@ -165,12 +165,6 @@ public class Datasource {
 
     /*
      * Using Prepared Statements
-     * - Use placeholders ? - this is what we use when we want to use PreparedStatements
-     * - When we're ready to use the query, we'll replace the placeholder with the actual title we want to query
-     * - This is what basically we've created:
-     *      SELECT name , album , track, title FROM artist_list WHERE title = ?;
-     * - With the constant below
-     * - Note that we don't put quotation marks around the song title
      */
     public static final String QUERY_VIEW_SONG_INFO_PREP =
             "SELECT "+ COLUMN_ARTIST_NAME +" ,"+ COLUMN_SONG_ALBUM +", "+
@@ -557,25 +551,6 @@ public class Datasource {
     /*
      * Query artist_list VIEW - USING PREPARED STATEMENT
      * SELECT name , album , track FROM artist_list WHERE title = ?;
-     *
-     *
-     * N/B : VERY IMPORTANT
-     * When we're using a PreparedStatement, the values being substituted are treated as literal values
-     * In other words, nothing within the value is treated as SQL
-     * Effectively, this is what was passed and got executed
-     *
-     *      SELECT name ,album, track FROM artist_list WHERE title="Go Your Own Way or 1=1 or "";
-     * Whatever we have typed in, is basically substituted for the Song title
-     * And since there isn't song with the title "Go Your Own Way or 1=1 or" , no records are returned
-     * A Malicious user can't inject SQL into the statement
-     * Anything substituted as a placeholder is treated as a single literal value and won't be interpreted as SQL
-     *
-     *
-     * When we're using a StringBuilder to build the query statement and concatenating the title, effectively
-     *  this is what is passed to the database and got executed
-     *
-     *      SELECT name ,album, track FROM artist_list WHERE title="Go Your Own Way" or 1=1 or "";
-     * It's really the double quotes in between that is making all the difference
      *
      * - close the prepared statement in the close()
      */
