@@ -693,7 +693,7 @@ import java.util.Scanner;
  *  - loop through the resultSet.next()
  *      - Create a SongArtist object : songArtist
  *          - call setArtistName() on songArtist obj & pass name of the artist obtained by resultSet.getString(1)
- *          - call setAlbumName() on songArtist obj & pass name of the artist obtained by resultSet.getString(2)
+ *          - call setAlbumName() on songArtist obj & pass name of the album obtained by resultSet.getString(2)
  *          - call setTrack() on songArtist obj & pass track no obtained by calling resultSet.getInt(3)
  *
  *      - add songArtist obj it to the songArtists arrayList
@@ -943,6 +943,101 @@ import java.util.Scanner;
  *  - Check that it still has the data
  *
  * Re-run it again, and we still don't get an error, since the VIEW already exist, our SQL statement can only create one if it doesn't exist
+ *
+ *
+ *
+ * //////////////////
+ *  Querying Views
+ * /////////////////
+ *
+ * Now that we've created artist_list VIEW , we can actually change the queryArtistForSong() and query using the view instead if we wanted to
+ * But we won't do that, but rather create a new method for this
+ * The user of the Datasource class could fall back to using the queryArtistForSong() if the creation of the view fails or calling the new method
+ *  results in an error
+ * We can query a view just as we'd do with a table
+ * In terms of querying a view we can use the following SQL statement
+ *
+ *      SELECT name,album,track FROM artist_list WHERE title = "Go Your Own Way";
+ *
+ *      - And if we run this against the db, we get 4 rows returned , 4 albums by Fleetwood Mac
+ *      - This time they're ordered by album title, because we ordered the records that way when we created the view
+ *
+ * Let's start writing the Java code for this query, again using the constants
+ *
+ *       public static final String QUERY_VIEW_SONG_INFO =
+            "SELECT "+ COLUMN_ARTIST_NAME +" ,"+ COLUMN_SONG_ALBUM +", "+
+                        COLUMN_SONG_TRACK +" FROM "+ TABLE_ARTIST_SONG_VIEW +
+            " WHERE "+ COLUMN_SONG_TITLE  +"=\"";
+ *
+ * Then write a method for querying from view : querySongInfoView(String title)
+ *      - Takes song title and searches the songs via song title
+ *      - Returns a List<SongArtist> objects
+ *
+ * Create a StringBuilder obj and append the title parameter
+ *
+ *       StringBuilder sb = new StringBuilder(QUERY_VIEW_SONG_INFO);
+         sb.append(title);
+         sb.append("\"");
+ *
+ * Create an ArrayList that's going to hold a List<SongArtist> objects
+ *
+ *      List<SongArtist> songArtistsList = new ArrayList<>();
+ *
+ * Create a Statement obj and pass the query string to executeQuery
+ *
+ *      Statement statement = conn.createStatement();
+        ResultSet resultSet = statement.executeQuery(sb.toString())
+ *
+ * Process the ResultSet using a loop
+ *      - Create a SongArtist obj : songArtist
+ *          - call setArtistName() on songArtist obj & pass name of the artist returned by resultSet.getString(1)
+ *          - call setAlbumName() on songArtist obj & pass name of the album returned by resultSet.getString(2)
+ *          - call setTrack() on songArtist obj & pass track no returned by resultSet.getInt(3)
+ *
+ *      - Add songArtist object to songArtistsList ArrayList
+ *
+ *      - Return songArtistsList ArrayList , otherwise , return null
+ *
+ * ///////
+ * The only real difference between querySongInfoView(String title) and queryArtistForSong() is the query string we're using
+ *
+ * //////
+ * Call querySongInfoView(string title) from the main()
+ *
+ *      List<SongArtist> songsForArtistViewList = datasource.querySongInfoView("She's On Fire");
+        if (songsForArtistViewList.isEmpty()) {
+            System.out.println("Couldn't find the artist for the song specified");
+            return;
+        }
+        for (SongArtist songForArtist : songsForArtistViewList) {
+            System.out.println("FROM VIEW - Artist = " + songForArtist.getArtistName() + " ,Album = " + songForArtist.getAlbumName()
+                    + " ,Track = " + songForArtist.getTrack());
+        }
+ *
+ *      - check if songsForArtistViewList arraylist is empty and if so, print out the user
+ *          - This is because we always create the list in the data source methods
+ *
+ *      - Otherwise, loop through the array list and print the results to the console
+ *
+ * Run and test with different songs :
+ *      - "She's On Fire"
+ *      - "Go Your Own Way"
+ *      - "Heartless
+ *
+ *
+ * ///////////////////////////////
+ * ///////////////////////////////
+ *  NOT - VERY IMPORTANT
+ * ///////////////////////////////
+ * ///////////////////////////////
+ *
+ * Our code is decent at the moment but there's one more important improvement we can make
+ * The way we're querying the database now isn't best practice.
+ * SQL statements have to be compiled into a form that the database understands
+ * When we use a Statement obj to perform queries, the statements are compiled everytime we perform a new query
+ * In this little application, it doesn't matter but if we were using Statement objects in an enterprise application, servicing thousands
+ *  of connections, then it would definitely impact performance
+ * Also the way that we're building our query strings, makes our database vulnerable to hacking attempts
  *
  */
 

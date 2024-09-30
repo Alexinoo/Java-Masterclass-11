@@ -534,10 +534,11 @@ public class Datasource {
         sb.append("\"");
 
         System.out.println(sb);
+
+        List<SongArtist> songArtistsList = new ArrayList<>();
         try(Statement statement = conn.createStatement();
         ResultSet resultSet = statement.executeQuery(sb.toString())){
 
-            List<SongArtist> songArtistsList = new ArrayList<>();
             while (resultSet.next()){
                 SongArtist songArtist = new SongArtist();
                 songArtist.setArtistName(resultSet.getString(1));
