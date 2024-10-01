@@ -1750,6 +1750,52 @@ import java.util.Scanner;
  *
  *      - wrap within try block and handle SQLException thrown by setAutoCommit()
  *
+ *
+ *
+ *
+ *
+ * //////////////////////////////
+ * //// Test Insert JDBC Code ///
+ * /////////////////////////////
+ *
+ * - Simulate an Error
+ *  - insertIntoSongs.setInt(7,albumId);
+ *  - we know the last index should be 3, for the placeholder is supposed to be 3
+ *
+ * - Insert a song : Bird Dog
+ *  - by: Everly Brothers,
+ *  - album: All-Time Greatest Hits
+ *  - track no : 7
+ *
+ * //// RESULTS /////
+ * - We got an ArrayIndexOutOfBoundsException error, which means that under the hood, the JDBC API, uses zero-based
+ *  index, and works with some sort of an array-like structure
+ *
+ * - However, both the artist and the albums were added, but the question is WHY ?
+ * - Didn't we have some code in there to do rollback ?
+ *
+ * //// EXPLANATION ////
+ * - SQLException wasn't thrown, but rather the ArrayIndexOutOfBoundsException was thrown
+ * - Therefore , the catch block was bypassed and rollback wasn't executed
+ * - The finally block was executed which had the side effect of committing the changes and that's why the
+ *   artist and the album were both saved
+ *
+ * ////  SOLUTION /////
+ * - So, how do we actually get around this ?
+ * - What we should do here is that instead of catching a SQLException, we should really catch all exceptions
+ * - So let's change the SQLException to Exception and that will catch array index out of bounds exception or
+ *   a SQLException , or any other Exception for that matter and we should get a rollback
+ *
+ * // TESTING ///
+ * - Delete both entries from artists and albums table :-
+ *  - artist : Everly Brothers
+ *  - album : All-Time Greatest Hits
+ * - Rerun again and check whether we get the proper behaviour that we're looking for which is a proper
+ *   rollback
+ *
+ * ///// FIX THE ERROR ////
+ * - Re-run to make sure things are still working as they should
+ * - Change the index back from 7 to 3
  */
 
 public class Main {
