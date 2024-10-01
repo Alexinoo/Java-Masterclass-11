@@ -582,11 +582,11 @@ public class Datasource {
      *
      * Steps:
      *  - query to check if the artist already exists
-     *      - if he exists,
-     *          - return the id that we retrieve from the result set. since we no longer need to insert a duplicate
-     *            because we found the artist on file
+     *      - if the name of the artist exists,
+     *          - return the id that we retrieve from the result set. since we no longer need to insert a duplicate because we found the artist
+     *             on file
      *          - will always be on column 1 since we're only returning the artist id
-     *      - if he doesn't exist
+     *      - if the artist doesn't exist
      *          - insert the artist
      *              - call insertIntoArtists.setString() with a placeholder index of 1 and pass the name variable
      *              - call insertIntoArtists.executeUpdate()
@@ -722,7 +722,7 @@ public class Datasource {
         try{
             querySong.setString(1, title);
             ResultSet resultSet = querySong.executeQuery();
-            // if a record was found - means album already exists - we don't need to do anything
+            // if a record was found - means song already exists - we don't need to do anything
             // proceed with the insert in the else statement
             if (resultSet.next()) {
                 System.out.println("Song Already Exists, Duplicate not allowed!");
