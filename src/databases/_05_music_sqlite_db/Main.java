@@ -1247,6 +1247,252 @@ import java.util.Scanner;
  * In other words, a malicious user can't inject SQL into the statement
  * Because anything substituted as a placeholder is treated as a single literal value and won't be interpreted as SQL
  *
+ *
+ *
+ *
+ *
+ * ///////////////
+ * //////////////
+ *  Transactions
+ * //////////////
+ * //////////////
+ *
+ * We concluded in the last video that a malicious user can't inject SQL , into the statement because anything substituted for a placeholder
+ *  is treated as a single literal value and won't be interpreted as SQL
+ *
+ * But suppose we wanted to use OR in our SELECT statement as follows
+ *
+ *      SELECT name,album, track FROM artist_list WHERE title = ? OR artist = ?;
+ *
+ * For each value, we need a placeholder
+ * We can't substitute more than 1 value for 1 placeholder and we can't inject SQL
+ * And also we can only substitute values
+ * We can't use placeholders for things like table and column names because in order to pre-compile the statements, the database needs to know
+ *  which table we're querying and the columns we want
+ * The only info we can postpone until we want to perform the query are the value themselves
+ * We can also use PreparedStatement with INSERT , UPDATE and DELETE commands
+ *
+ * We use placeholders for the values in the same way we'd use them within SELECT statements
+ *
+ * ///////////////
+ * POINTS - RECAP
+ * ///////////////
+ *
+ * It's a good practice to use PreparedStatements because of the potential performance benefit, and because they protect the database against
+ *  SQL injection attacks
+ *      - Though that doesn't mean our database can't be hacked , but just that it can't be hacked using that particular type of attack
+ *
+ * So to recap, we do the following to use PreparedStatement:
+ *      1. Declare a constant for the SQL statement that contains the placeholders
+ *
+ *      2. Create a PreparedStatement instance using
+ *
+ *          Connection.prepareStatement(sqlStmtString)
+ *
+ *      3. When we're ready to perform the query (or the Insert, Update , Delete), we call the appropriate setter methods to set the
+ *          placeholders to the values we want to use in the statement
+ *
+ *      4. We run the statement using PreparedStatement.execute() or Prepared.executeQuery()
+ *
+ *      5. We process the results the same way we do when using a regular old Statement
+ *
+ * That's all for Prepared Statements
+ *
+ *
+ *  ///////////////////////
+ *  More on Transactions
+ * /////////////////////////
+ *
+ * Our final topic for this lecture will be transactions
+ * Because the JDBC Connection class auto commits changes by default, every time we call execute() to Insert, Update, or Delete records, those
+ *  changes are saved to the database as soon as the SQL statement completes
+ * Sometimes that's what we want , but often, it's not
+ *
+ * #Scenario-1
+ * ////////////
+ *
+ * For example, let's say our application is a web portal that people use to do online banking
+ * One of the things they can do is transfer money from one account to another
+ * When they do this, we have to run 2 SQL statements
+ *
+ *      1. Update the source account with the new balance
+ *      1. Update the destination account with the new balance
+ *
+ * What would happen if we executed the first statement successfully, but second statement failed for some reason
+ * Let's say the source account has a balance of $1000.00, and the destination account has a balance of $100.00
+ * The customer wants to transfer $200.00 into the destination account
+ *
+ * In #step-1
+ *      - We update the record for the source account so that it has a balance of $800.00
+ *
+ * In #step-2
+ *      - We update the destination account so that it has a balance of $300.00
+ *
+ * If #step-1 completes, but #step-2 fails, the $200.00 we're transferring will go missing
+ *
+ * Hopefully, we'd notice the failure, but then we'd want to write code that would handle any failures by adding the money back to the
+ *  source account
+ * But what happens if we can't do that because the second step failed because the database is down, or can't be reached ? What then ?
+ *
+ *
+ *
+ * #Scenario-2
+ * ////////////
+ *
+ * Suppose we want to add a new song to the music database. What do we have to do ?
+ *
+ *      1. Add the artist for the song to the artists table
+ *      2. Add the album the song is on to the albums table
+ *      3. Add the song to the songs table
+ *
+ * What happens if we complete #step-1 , but then #step-2 and #step-3 keep failing ?
+ * Maybe we're trying to do this over the Internet and we lose our connection
+ * This wouldn't be as bad as the situation in the Banking example but we would end up with records in the artists and/or albums table
+ *  that aren't associated with any songs
+ * The integrity of the data would be compromised
+ *
+ * It would be nice if we want to accomplish something that requires multiple SQL statements , we could run all the statements as a single
+ *  unit
+ * Either all the statements would successfully complete or none of them would
+ * This is where transactions come in
+ *
+ * A transaction is a sequence of SQL statements that are treated as a single logical unit
+ * If any of the statements fail, the results of any previous statements in the transaction can be rolled back, or just not saved
+ * It's as if they never happened
+ *
+ * In the Banking case:
+ *  - If #Step-2 failed, then the balance in the source account would be rolled back to it's original value
+ *
+ * In the Music case:
+ *  - If #step-1 and #step=2 succeed but #step-3 fails, then #step-1 and #step-2 are rolled back
+ *  - The artist and album are never saved in the artists and albums tables
+ *
+ * Note that when we're speaking about databases, we usually use the term commit, rather than save, when referring to making any changes
+ *  permanent
+ * We'll use commit from this point forward
+ *
+ * Database transactions MUST be ACID-compliant
+ * They must meet the following characteristics:
+ *
+ *      1. Atomicity - If a series of SQL statements change the database, then either all the changes are committed , or none of them are
+ *
+ *      2. Consistency - Before a transaction begins, the database is in a valid state, when it completes, the database is still in a valid
+ *                      state
+ *
+ *      3. Isolation - Until the changes committed by a transaction are completed, they won't be visible to other connections
+ *                   - Transactions can't depend on each other
+ *
+ *      4. Durability - Once the changes performed by the transaction are committed to the database, they're permanent
+ *                    - If an application then crashes or the database server goes down, the changes made by the transactions are still there
+ *                       when the application runs again, or the database comes back up
+ *
+ * Essentially, transactions ensure the integrity of the data within a database
+ *
+ * We only have to use transactions when we change the data in a database.
+ * We don't need them if we're querying the database, since we're not changing any data
+ * SQLite uses transaction by default, and auto-commits by default
+ * When we were working with the contacts database, everytime we used UPDATE, INSERT , and DELETE, SQLite was creating a transaction,
+ *  running the statement and then committing the changes
+ *
+ * AS we learned earlier, the JDBC Connection class also auto-commits changes by default.
+ * When we turned off auto-commit , SQLite stopped auto-committing the changes , but they were still made as part of a transaction
+ *
+ * When working with SQLite, the following commands are used for transactions
+ *
+ *      1. BEGIN TRANSACTION - we use this to manually start a transaction
+ *
+ *      2. END TRANSACTION - use this to end a transaction. Committing changes automatically ends a transaction
+ *                         - Also, ending a transaction also commits any changes
+ *                         - In other words, END TRANSACTION and COMMIT are aliases
+ *                         - We only have to use one when we want to end a transaction and commit the changes
+ *
+ *      3. COMMIT - we use this to commit the changes made by a transaction
+ *                - As mentioned, this ends the transaction, so we don't need to also run the END TRANSACTION command
+ *
+ *      4. ROLLBACK - this rolls back any uncommitted changes and ends the transaction
+ *                  - Note that it can only rollback changes that have occurred since the last COMMIT or ROLLBACK
+ *
+ * N/B
+ * When we close a connection before we commit any outstanding changes, the changes are rolled back
+ *
+ * Let's take a look at how we use transactions with JDBC
+ * When using JDBC, we don't code the transaction-related SQL statements and use Statement objects to execute them
+ * We call methods in the Connection class to execute transaction related commands
+ * We perform the following steps:
+ *
+ *      1. Turn off the default auto-commit behavior by calling Connection.setAutoCommit(false) and pass false
+ *
+ *      2. Perform the SQL operations that form the transaction
+ *
+ *      3. If there are no errors, call Connection.commit() to commit the changes
+ *          - If there are errors, call Connection.rollback() to rollback any changes made since the transaction began
+ *
+ *      4. Turn the default auto-commit behavior back on by calling Connection.setAutoCommit(true) and passing true
+ *
+ * To demonstrate a transaction, we'll add the code to INSERT a song into the songs table, which has columns for the song title,
+ *  the _id , the _id for the album the song is on, and the track number of the song on the album
+ *
+ * When we want to add a song, how do we get the _id for the album ?
+ * As pointed out earlier, before adding a song , we have to add the album it's on to the album's table, which has columns for the
+ *
+ *      - _id
+ *      - name of the album
+ *      - and the _id for the artist
+ *
+ * How do we get the artist _id ?
+ * We have to add the artist to the artists table before adding the album
+ * If there's a record for the artist or album, then we wont add them again, so we'll have to check for that case
+ *
+ *
+ *
+ * /////  Adding a Song ////
+ *
+ * To add a song, the user has to provide us with the song title , the album it's on , the artist and the track number fro the song
+ *
+ * So, we'll perform the following steps:
+ *      1. Get the title, album , track number, and artist ( we'll just have the main() pass them as parameters , rather than prompting them)
+ *
+ *      2. Check to see if there's a record for the artist in the artists table
+ *          - IF Yes , go to #step-4
+ *          - IF No , do to #step-3
+ *
+ *      3. Add the artist to the artists table
+ *
+ *      4. Check to see if the album is in the albums table
+ *          - IF Yes, go to #step-6
+ *          - IF No, go to #step-5
+ *
+ *      5. Add the album to the albums table
+ *
+ *      6. Add the song to the songs table
+ *
+ * We'll want all the insertions to take place within a single transaction , so that we don't end up with records in the artists table that
+ *  aren't associated with any albums or songs, or with albums that aren't associated with any songs
+ *
+ * We should check for the existence of the song, too, before we add it.
+ * But since more than one song can have the same title, we'd have to check that the album was also the same, and that artist was also the same
+ *  which would involve querying all 3 tables
+ *
+ * ///// Implementation
+ *
+ * We'll need an INSERT statement for each table
+ * Let's add constants for them to the Datasource class,
+ * We'll use PreparedStatements for the following:
+ *
+ *      INSERT INTO artists(name) VALUES(?);
+ *      INSERT INTO albums(name,artist) VALUES(? , ?);
+ *      INSERT INTO songs(track, title,album) VALUES(? , ? , ?);
+ *
+ *
+ *
+ * //////////////////////////////
+ *  Inserting Records with JDBC
+ * //////////////////////////////
+ *
+ *
+ *
+ *
+ *
  */
 
 public class Main {
