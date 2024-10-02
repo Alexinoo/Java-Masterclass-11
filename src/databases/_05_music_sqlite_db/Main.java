@@ -1758,44 +1758,125 @@ import java.util.Scanner;
  * //// Test Insert JDBC Code ///
  * /////////////////////////////
  *
- * - Simulate an Error
- *  - insertIntoSongs.setInt(7,albumId);
+ *
+ * Let's check the DB Browser , before we add any other song
+ *
+ *      - we have 201 artists
+ *      - we have 439 albums
+ *      - we have 5350 songs
+ *
+ * Let's now call insertSong() and insert the song
+ *
+ *      - Touch of Grey by Grateful Dead, In The Dark album , Track no. 1
+ *
+ *       datasource.insertSong("Touch of Grey","Grateful Dead","In The Dark",1);
+ *
+ * Run this and confirm with the DB Browser and refresh the db
+ *      - we now have 202 artists
+ *      - we now have 440 albums
+ *      - we now have 5351 songs
+ *
+ * Let's run the same code again:
+ *
+ *      datasource.insertSong("Touch of Grey","Grateful Dead","In The Dark",1);
+ *
+ *      - note that the artist "Grateful Dead" this time wasn't added which is exactly what we wanted
+ *      - note also that the album "In the Dark" wasn't added as it already exist
+ *
+ *      - But in the songs table, a duplicate record was added
+ *
+ *          - I fixed this from my end by checking for DUPLICATE before adding the same song ( Tim Assignment)
+ *              - add a constant : QUERY_SONG
+ *              - add a PreparedStatement instance
+ *              - Add it to the open()
+ *              - Add it to the close()
+ *              - Execute this query first before adding the song
+ *
+ * ///////
+ *
+ * Let's add another song : Like a Rolling Stone, Bob Dylan , Bob Dylan's Greatest Hits , Track no 5
+ *
+ *      datasource.insertSong("Like a Rolling Stone","Bob Dylan","Bob Dylan's Greatest Hits",5);
+ *
+ * Run and confirm with the DB Browser that the insertion was done successfully
+ *
+ * //////////////////
+ * Simulate an Error
+ * //////////////////
+ *
+ * Let's try now and introduce an error into the insertSong() and we can do this by using an invalid index when we set one of the values
+ * as follows
+ *
+ *      insertIntoSongs.setInt(7,albumId);
+ *
  *  - we know the last index should be 3, for the placeholder is supposed to be 3
  *
- * - Insert a song : Bird Dog
- *  - by: Everly Brothers,
- *  - album: All-Time Greatest Hits
- *  - track no : 7
+ * Let's add another song : Bird Dog , Everly Brothers, All-Time Greatest Hits , track no 7
  *
- * //// RESULTS /////
- * - We got an ArrayIndexOutOfBoundsException error, which means that under the hood, the JDBC API, uses zero-based
- *  index, and works with some sort of an array-like structure
+ * If we run this , we get an ArrayIndexOutOfBoundsException error,
+ * This means that the values we're replacing are stored in an array & when we try to set the 6th element in the album id, we get an exception
  *
- * - However, both the artist and the albums were added, but the question is WHY ?
- * - Didn't we have some code in there to do rollback ?
+ * It's interesting to note that the invalid index is 6, which means that under the hood, the indices are being mapped to a zero-based
+ *  index, which raises the question why the JDBC API uses zero-based indices in the first place
+ *
+ *
+ * However, If we check with the DB Browser and refresh , both the artist and the albums were added,
+ *
+ * So what's actually going on here, why were the artist and the album records added , and the a=song wasn't ?
+ * Didn't we have some code in there to do rollback ?
  *
  * //// EXPLANATION ////
- * - SQLException wasn't thrown, but rather the ArrayIndexOutOfBoundsException was thrown
- * - Therefore , the catch block was bypassed and rollback wasn't executed
- * - The finally block was executed which had the side effect of committing the changes and that's why the
- *   artist and the album were both saved
+ * If we really look carefully at the exception thrown here, we're only catching SQLException wasn't thrown, but rather the
+ *   ArrayIndexOutOfBoundsException was thrown
+ * So consequently , the catch block was bypassed and rollback wasn't executed
+ * The finally block was executed which sets the auto-commit to true which had the side effect of committing the changes and
+ *  that's why the artist and the album were both saved
  *
  * ////  SOLUTION /////
  * - So, how do we actually get around this ?
  * - What we should do here is that instead of catching a SQLException, we should really catch all exceptions
- * - So let's change the SQLException to Exception and that will catch array index out of bounds exception or
- *   a SQLException , or any other Exception for that matter and we should get a rollback
+ * - So let's change the SQLException to Exception and that will catch ArrayIndexOutOfBoundsException or a SQLException , or any other
+ *   Exception for that matter and we should get a rollback
  *
  * // TESTING ///
  * - Delete both entries from artists and albums table :-
  *  - artist : Everly Brothers
  *  - album : All-Time Greatest Hits
- * - Rerun again and check whether we get the proper behaviour that we're looking for which is a proper
- *   rollback
+ *
+ * Refresh the database
+ *
+ * Rerun again and check whether we get the proper behaviour that we're looking for which is a proper rollback
+ * This time round we get the following output printed to the console
+ *  - Insert Song exception : 6 (6 is the invalid index)
+ *  - Performing Rollback
+ *  - Resetting default commit behavior
+ * Confirm with the DB Browser that the changes weren't added to the database this time
  *
  * ///// FIX THE ERROR ////
- * - Re-run to make sure things are still working as they should
- * - Change the index back from 7 to 3
+ * Change the index back from 7 to 3
+ * Re-run to make sure things are still working as they should
+ * Confirm with the DB Browser that the changes were added to the database
+ *
+ *
+ *  //// Summary /////
+ * At this point now we how to work with transactions using JDBC
+ * We use them when we want to perform a series of SQL statements as a unit, so that the changes are only committed to the database
+ *  if all the statements run successfully
+ * If a statement fails, or something else happens, perhaps the lost connection or the server goes down in the middle of performing a
+ *  transaction, then we won't end up with a database in an invalid state
+ * We'll be able to rollback any changes that have been made or if the connection goes down for some reason, the database will automatically
+ *  roll back any changes and end the transaction
+ *
+ * ////
+ * Also note that it's also possible to rollback a transaction to a specific point rather than rolling back all the changes that have been
+ *  made since the transaction started
+ *
+ * To do this, we need to call Connection.setSavepoint(), which returns a SetSavepoint object
+ * If we need to rollback the changes that have been made since we created the savepoint, we pass the Savepoint obj to the Connection.rollback()
+ * We'd only do this where it makes sense to rollback any part of a transaction when something goes wrong
+ *
+ * /////
+ * We'll start looking at the concept of using JDBC from a GUI type application
  */
 
 public class Main {
@@ -1908,65 +1989,7 @@ public class Main {
 
         /*
          * Insert a Song
-         *  - Touch of Grey by Grateful Dead, In The Dark album , Track no. 1
-         * Note ,
-         *  - we have 201 artists
-         *  - we have 439 albums
-         *  - we have 5350 songs
-         * Song inserted
          *
-         * Add another song : Like a Rolling Stone, Bob Dylan , Bob Dylan's Greatest Hits , Track no 5
-         *
-         *
-         * //// TESTING ////
-         * - Simulate an Error
-         *      - insertIntoSongs.setInt(7,albumId);
-         *      - we know the last index should be 3, for the placeholder is supposed to be 3
-         * - Insert a song : Bird Dog
-         *      - by: Everly Brothers,
-         *      - album: All-Time Greatest Hits
-         *      - track no : 7
-         *
-         * //// RESULTS /////
-         * - We got an ArrayIndexOutOfBoundsException error, which means that under the hood, the JDBC API, uses zero-based
-         *  index, and works with some sort of an array-like structure
-         *
-         * - However, both the artist and the albums were added, but the question is WHY ?
-         * - Didn't we have some code in there to do rollback ?
-         *
-         * //// EXPLANATION ////
-         * - SQLException wasn't thrown, but rather the ArrayIndexOutOfBoundsException was thrown
-         * - Therefore , the catch block was bypassed and rollback wasn't executed
-         * - The finally block was executed which had the side effect of committing the changes and that's why the
-         *   artist and the album were both saved
-         *
-         * ////  SOLUTION /////
-         * - So, how do we actually get around this ?
-         * - What we should do here is that instead of catching a SQLException, we should really catch all exceptions
-         * - So let's change the SQLException to Exception and that will catch array index out of bounds exception or
-         *   a SQLException , or any other Exception for that matter and we should get a rollback
-         *
-         * // TESTING ///
-         * - Delete both entries from artists and albums table :-
-         *      - artist : Everly Brothers
-         *      - album : All-Time Greatest Hits
-         * - Rerun again and check whether we get the proper behaviour that we're looking for which is a proper
-         *   rollback
-         *
-         * ///// RESULTS ///
-         * - This time, we get the correct behavior
-         *      - Insert Song Exception
-         *      - We get Performing Rollback
-         *      - And Resetting commit behavior
-         * - We'll still doing auto-commit to true, but the rollback() was called prior to that, and we should find
-         *   that changes weren't added to the database this time
-         *
-         * - And this time the artist, album or the song were neither added
-         *
-         *
-         * ///// FIX THE ERROR ////
-         * - Re-run to make sure things are still working as they should
-         * - Change the index back from 7 to 3
          */
 
 
