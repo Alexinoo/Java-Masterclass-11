@@ -36,6 +36,7 @@ public class Server {
 
             while (true){
                 new Echoer(serverSocket.accept()).start();
+                System.out.println("Client connected");
 
                 //Above is Equivalent to
                 /*
