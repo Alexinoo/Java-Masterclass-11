@@ -30,6 +30,7 @@ public class Server {
                 output.println("Echo from server: "+echoString);
             } */
 
+            System.out.println("Server started..");
             while (true){
                 new Echoer(serverSocket.accept()).start();
                 System.out.println("Client connected");

@@ -19,9 +19,16 @@ public class Echoer extends Thread{
 
             while (true){
                 String echoString = reader.readLine();
+                System.out.println("Received client input: "+echoString);
 
                 if (echoString.equals("exit"))
                     break;
+                
+                try{
+                    Thread.sleep(15000);
+                }catch(InterruptedException ie){
+                    System.out.println("Thread Interrupted: "+ie.getMessage());
+                }
 
                 writer.println(echoString);
             }
@@ -31,7 +38,7 @@ public class Echoer extends Thread{
             try{
                 socket.close();
             }catch (IOException ioe){
-
+                // Ooh, well!
             }
         }
     }
