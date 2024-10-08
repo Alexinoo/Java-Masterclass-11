@@ -44,7 +44,7 @@ import java.net.Socket;
  * Start the server
  * Start Client.Main.java - Client-1
  *      - Type Tim
- *          - We can see the Server has receive the input
+ *          - We can see the Server has received the input
  *      - Then go to Client-2
  *          - Start Client.Main.java - Client-2
  *              - Type Bob
@@ -56,7 +56,7 @@ import java.net.Socket;
  *
  * The point here is 1 thread taking a while will not result in every client being blocked until the long-running client is finished which is
  *  pretty cool
- * We can actually test this and run as many clients as we'd want and we can actually do that, but let's disconnect our clients first and our
+ * We can actually test this and run as many clients as we'd want, and we can actually do that, but let's disconnect our clients first and our
  *  server as well
  *
  * But before we do that let's get rid of our sleep code - comment it out
@@ -86,12 +86,53 @@ import java.net.Socket;
  * Then let's click continue from the Server console , and the server is still running and we can still chat with the other client (Client-2)
  *
  *
- * //////
+ * //////   Timeouts  ////////
  * That's the basics of working with sockets
  * Before we proceed to UDP, let's take a look at timeouts briefly
  * When a Client is communicating with a server, it doesn't want to block forever
  * If the server goes down or it isn't sending a response for some other reason, then the client would want to report back to the user
+ * Otherwise, the user is going to think the application is frozen or has just died for some other reason
  *
+ * So we can set a timeout period on a socket, so that if a socket doesn't respond within the timeout, then we get a
+ *  java.net.SocketTimeoutException thrown
+ *
+ * We'll set a timeout for the client
+ *
+ * Add the line below before reading from the Server using BufferedReader to the Client.java
+ *
+ *      socket.setSoTimeout(5000);
+ *
+ * We'll need to handle the SocketTimeoutException, and in this case, we're going to terminate the application but in a real world it
+ *  will depend on the situation
+ *  - We may want to for example try sending the request again
+ *  - We might want to abort that particular action and inform the user
+ *  - Or perhaps, we might want to terminate the application
+ *
+ * We might want to give the user a choice and there's a couple of options up here
+ * But for this demo app, we'll just add a catch block to the existing try catch block and we're going to catch the exception outside
+ *  the loop and then terminate the client application
+ *
+ *
+ * ////// Testing
+ *
+ * To test this, we're going to simulate a delay for 15 sec so that the Client.Main.java actually times out before the server can respond
+ * We're going to uncomment the sleep code from the Echoer.java to achieve that
+ *
+ * We have re-enabled the server sleep code so that the server thread sleeps for 15 seconds
+ *
+ * We're going to start the server and then restart the client and we've also set the client socket time out to 5 seconds
+ * And the server sleeps for 15 seconds each time the client sends a request
+ * So consequently, the socket should time out, and the SocketTimeoutException should be thrown
+ *
+ *
+ * ////
+ * Run the server and client
+ * Type something from the client side and wait for a response
+ * We can see that the client socket times out before the server could respond
+ *
+ * Note that the client also terminated
+ *
+ * Using timeouts is a very important tool and it prevents the client from blocking forever
  *
  */
 public class Server {
