@@ -39,6 +39,26 @@ public class ApacheTest {
 
     }
 
+    /* public static void main(String[] args) throws IOException {
+
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        HttpGet request = new HttpGet("http://example.org/");
+        request.addHeader("User-Agent","Chrome");
+
+        CloseableHttpResponse response = httpClient.execute(request);
+
+        try{
+            System.out.println("Response code = "+ response.getStatusLine().getStatusCode());
+            printWebsiteContent(response.getEntity().getContent());
+
+        }catch (IOException e){
+            System.out.println("IOException: "+e.getMessage());
+        }finally {
+           response.close();
+        }
+
+    } */
+
     private static void printWebsiteContent(InputStream inputStream) throws IOException {
         try(BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))){
             String line;
